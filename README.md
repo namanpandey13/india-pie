@@ -1,50 +1,47 @@
-# Welcome to your Expo app 👋
+# Aangan v0.1
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An Expo Go prototype for a Delhi NCR-only, Pie-inspired offline social app.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Try It On Laptop
 
 ```bash
-npm run reset-project
+npm run web
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Open the localhost URL Expo prints. The app starts at a fake prefilled login screen, then enters Discover.
 
-## Learn more
+## Try It On iPhone With Expo Go
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Scan the QR code from Expo Go.
 
-## Join the community
+## Current Prototype Scope
 
-Join our community of developers creating universal apps.
+The build is local-state only. It is meant to test flow, positioning, and trust cues before auth, backend, payments, notifications, or real chat.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Login: fake Delhi NCR profile with phone, Instagram, LinkedIn, and intent prefilled.
+- Discover: Pie-style dark feed, all/friends toggle, Delhi NCR only, filters, event cards, saved state.
+- Event detail: tap an event to inspect details, organizer reputation, trust signals, prompts, and who is going.
+- Host: creator-led event setup with guest list control, venue proof, pre-chat prompts, and host accountability.
+- Chat: fake pre-event group chats and "stars aligned" people prompt.
+- Profile: lightweight social proof and trust graph mock.
+
+## Cofounder Alignment Baked In
+
+- The category is a trust and social-confidence problem, not just event discovery.
+- Registration is not attendance; the product must reduce the "booked to showed up" drop-off.
+- Free events are good for entry but weak for commitment, so confidence signals matter.
+- Hosts should behave like creators with reputation, reviews, and operational standards.
+- Guest lists, identity links, and attendee previews are part of the trust layer.
+- Communication should stay in-app instead of immediately collapsing into WhatsApp.
+
+## Next Build Slice
+
+- Persist login, profiles, events, RSVP, save, and chat state.
+- Add true join request flow with host approval.
+- Add host reputation and post-event review data.
+- Add city/locality search after Delhi NCR feels right.
+- Add notification and calendar flows only after RSVP intent tests well.
