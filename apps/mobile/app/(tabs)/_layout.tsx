@@ -3,7 +3,7 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { colors } from '@/components/mvp-kit';
+import { colors } from '@hausy/ui';
 
 export default function TabLayout() {
   return (

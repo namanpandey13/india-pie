@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Avatar, Card, colors, Header, PrimaryButton, Screen, SectionTitle, TopBar } from '@/components/mvp-kit';
-import { chats, events } from '@/data/mvp';
+import { Avatar, Card, colors, Header, PrimaryButton, Screen, SectionTitle, TopBar } from '@hausy/ui';
+import { useChatOverview } from '@/features/chat/use-chat-overview';
 
 export default function ChatScreen() {
+  const { chats } = useChatOverview();
+
   return (
     <Screen>
       <TopBar />
@@ -15,27 +17,20 @@ export default function ChatScreen() {
       />
 
       <SectionTitle title="active pre-chats" action="no WhatsApp" />
-      {chats.map((chat) => {
-        const event = events.find((item) => item.id === chat.eventId);
-
-        return (
+      {chats.map((chat) => (
           <Card key={chat.id} style={styles.chatCard}>
             <View style={styles.chatTop}>
               <View style={styles.stack}>
                 {chat.members.slice(0, 4).map((member, index) => (
                   <View key={member} style={{ marginLeft: index === 0 ? 0 : -9 }}>
-                    <Avatar
-                      label={member.slice(0, 1)}
-                      color={[colors.lime, colors.coral, colors.blue, colors.yellow][index]}
-                      size={36}
-                    />
+                    <Avatar label={member.slice(0, 1)} color={['lime', 'coral', 'blue', 'yellow'][index]} size={36} />
                   </View>
                 ))}
               </View>
               <View style={styles.chatCopy}>
                 <Text style={styles.chatTitle}>{chat.title}</Text>
                 <Text style={styles.chatMeta}>
-                  {chat.members.length} members - {event?.locality}
+                  {chat.members.length} members - {chat.event.locality}
                 </Text>
               </View>
               {chat.unread ? (
@@ -57,19 +52,18 @@ export default function ChatScreen() {
               <Ionicons name="send" size={18} color={colors.lime} />
             </View>
           </Card>
-        );
-      })}
+        ))}
 
       <SectionTitle title="stars aligned" action="people to meet" />
       <Card style={styles.alignedCard}>
         <View style={styles.alignedPeople}>
           <View style={styles.personTile}>
-            <Avatar label="YO" color={colors.lime} size={72} />
+            <Avatar label="YO" color="lime" size={72} />
             <Text style={styles.personLabel}>you</Text>
           </View>
           <Ionicons name="star" size={24} color={colors.ink} />
           <View style={styles.personTile}>
-            <Avatar label="RI" color={colors.coral} size={72} />
+            <Avatar label="RI" color="coral" size={72} />
             <Text style={styles.personLabel}>riya</Text>
           </View>
         </View>

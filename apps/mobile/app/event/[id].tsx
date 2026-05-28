@@ -1,20 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Avatar, Card, colors, GhostButton, Pill, PrimaryButton, SectionTitle } from '@/components/mvp-kit';
-import { events } from '@/data/mvp';
-
-type Tab = 'details' | 'organizer' | 'going';
+import { Avatar, Card, colors, GhostButton, Pill, PrimaryButton, SectionTitle } from '@hausy/ui';
+import { useEventDetail } from '@/features/events/use-event-detail';
+import type { Event } from '@hausy/types';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const event = useMemo(() => events.find((item) => item.id === id) ?? events[0], [id]);
-  const [tab, setTab] = useState<Tab>('details');
-  const [joined, setJoined] = useState(event.id === 'hk-boardgames');
+  const { event, joined, setJoined, setTab, tab } = useEventDetail(id);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -77,7 +73,7 @@ export default function EventDetailScreen() {
   );
 }
 
-function DetailsTab({ event }: { event: (typeof events)[number] }) {
+function DetailsTab({ event }: { event: Event }) {
   return (
     <View style={styles.tabContent}>
       <Card style={styles.copyCard}>
@@ -107,7 +103,7 @@ function DetailsTab({ event }: { event: (typeof events)[number] }) {
   );
 }
 
-function OrganizerTab({ event }: { event: (typeof events)[number] }) {
+function OrganizerTab({ event }: { event: Event }) {
   const organizer = event.organizer;
 
   return (
@@ -142,7 +138,7 @@ function OrganizerTab({ event }: { event: (typeof events)[number] }) {
   );
 }
 
-function GoingTab({ event }: { event: (typeof events)[number] }) {
+function GoingTab({ event }: { event: Event }) {
   return (
     <View style={styles.tabContent}>
       <Card style={styles.copyCard}>
@@ -180,12 +176,12 @@ const styles = StyleSheet.create({
   },
   heroShade: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.42)',
+    backgroundColor: colors.overlayHero,
   },
   floatingIcon: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.58)',
-    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: colors.overlayMedium,
+    borderColor: colors.overlayBorder,
     borderRadius: 999,
     borderWidth: 1,
     height: 42,
@@ -205,8 +201,8 @@ const styles = StyleSheet.create({
   },
   poster: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.56)',
-    borderColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: colors.overlayMedium,
+    borderColor: colors.overlayLight,
     borderRadius: 18,
     borderWidth: 1,
     bottom: 40,

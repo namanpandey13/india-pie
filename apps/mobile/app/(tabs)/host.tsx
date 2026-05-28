@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
@@ -12,15 +11,22 @@ import {
   Screen,
   SectionTitle,
   TopBar,
-} from '@/components/mvp-kit';
-
-const templates = ['game night', 'photo walk', 'builders dinner', 'listening party'];
+} from '@hausy/ui';
+import { useHostDraft } from '@/features/host/use-host-draft';
 
 export default function HostScreen() {
-  const [template, setTemplate] = useState(templates[0]);
-  const [visibility, setVisibility] = useState<'public' | 'curated' | 'private'>('curated');
-  const [title, setTitle] = useState('Khan Market coffee table for new operators');
-  const [capacity, setCapacity] = useState('14');
+  const {
+    capacity,
+    draft,
+    setCapacity,
+    setTemplate,
+    setTitle,
+    setVisibility,
+    template,
+    templates,
+    title,
+    visibility,
+  } = useHostDraft();
 
   return (
     <KeyboardAvoidingView
@@ -121,7 +127,7 @@ export default function HostScreen() {
           <GhostButton label="edit prompts" icon="pencil-outline" />
         </Card>
 
-        <PrimaryButton label="Save draft" icon="document-text-outline" tone="blue" />
+        <PrimaryButton label={`Save ${draft.status}`} icon="document-text-outline" tone="blue" />
         <PrimaryButton label="Preview and publish" icon="send-outline" />
       </Screen>
     </KeyboardAvoidingView>

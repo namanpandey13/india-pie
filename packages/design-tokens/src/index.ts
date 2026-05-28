@@ -18,6 +18,40 @@ export const semanticColors = {
   violet: '#AF7BFF',
   white: '#FFFFFF',
   black: '#000000',
+  overlayLight: 'rgba(255,255,255,0.16)',
+  overlayBorder: 'rgba(255,255,255,0.18)',
+  overlaySoft: 'rgba(0,0,0,0.28)',
+  overlayHero: 'rgba(0,0,0,0.42)',
+  overlayMedium: 'rgba(0,0,0,0.56)',
+  overlayPanel: 'rgba(18,18,18,0.94)',
+  overlayStrong: 'rgba(0,0,0,0.72)',
+} as const;
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 18,
+  '2xl': 24,
+  '3xl': 34,
+} as const;
+
+export const radius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 18,
+  '2xl': 24,
+  pill: 999,
+} as const;
+
+export const semanticAccents = {
+  lime: semanticColors.lime,
+  coral: semanticColors.coral,
+  blue: semanticColors.blue,
+  yellow: semanticColors.yellow,
+  violet: semanticColors.violet,
 } as const;
 
 export const typography = {
@@ -35,14 +69,16 @@ export const typography = {
 
 export const nativeWindTheme = {
   colors: semanticColors,
+  spacing,
   fontFamily: typography.fontFamily,
   fontSize: typography.fontSize,
   borderRadius: {
-    sm: '8px',
-    md: '12px',
-    lg: '16px',
+    sm: `${radius.sm}px`,
+    md: `${radius.md}px`,
+    lg: `${radius.lg}px`,
     pill: '999px',
   },
 } as const;
 
 export type SemanticColor = keyof typeof semanticColors;
+export type SemanticAccent = keyof typeof semanticAccents;

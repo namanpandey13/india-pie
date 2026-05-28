@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Avatar, Card, colors, Header, Metric, Pill, Screen, SectionTitle, TopBar } from '@/components/mvp-kit';
-import { loginProfile } from '@/data/mvp';
+import { Avatar, Card, colors, Header, Metric, Pill, Screen, SectionTitle, TopBar } from '@hausy/ui';
+import { useProfile } from '@/features/profile/use-profile';
 
 export default function ProfileScreen() {
+  const loginProfile = useProfile();
+
   return (
     <Screen>
       <TopBar />
@@ -16,7 +18,7 @@ export default function ProfileScreen() {
 
       <Card style={styles.profileCard}>
         <View style={styles.profileTop}>
-          <Avatar label="NP" color={colors.lime} size={68} />
+          <Avatar label={loginProfile.initials} color="lime" size={68} />
           <View style={styles.profileCopy}>
             <Text style={styles.name}>{loginProfile.name}</Text>
             <Text style={styles.city}>{loginProfile.city}</Text>
@@ -38,11 +40,11 @@ export default function ProfileScreen() {
       <SectionTitle title="trust graph" action="mock" />
       <Card style={styles.graphCard}>
         <View style={styles.graphRow}>
-          <Avatar label="NP" color={colors.lime} size={48} />
+          <Avatar label={loginProfile.initials} color="lime" size={48} />
           <View style={styles.graphLine} />
-          <Avatar label="RM" color={colors.coral} size={44} />
+          <Avatar label="RM" color="coral" size={44} />
           <View style={styles.graphLine} />
-          <Avatar label="TS" color={colors.yellow} size={44} />
+          <Avatar label="TS" color="yellow" size={44} />
         </View>
         <Text style={styles.graphText}>
           Based on plans attended, mutuals, host reviews, and recurring small-group chats.

@@ -3,10 +3,12 @@ import { router } from 'expo-router';
 import { ImageBackground, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Avatar, colors, GhostButton, PrimaryButton } from '@/components/mvp-kit';
-import { loginProfile } from '@/data/mvp';
+import { Avatar, colors, GhostButton, PrimaryButton } from '@hausy/ui';
+import { useLoginProfile } from '@/features/auth/use-login-profile';
 
 export default function LoginScreen() {
+  const loginProfile = useLoginProfile();
+
   return (
     <ImageBackground
       source={{
@@ -30,7 +32,7 @@ export default function LoginScreen() {
 
         <View style={styles.panel}>
           <View style={styles.profileRow}>
-            <Avatar label="NP" color={colors.lime} size={48} />
+            <Avatar label={loginProfile.initials} color="lime" size={48} />
             <View style={styles.profileCopy}>
               <Text style={styles.profileName}>{loginProfile.name}</Text>
               <Text style={styles.profileMeta}>{loginProfile.city} - prefilled demo login</Text>
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.72)',
+    backgroundColor: colors.overlayStrong,
   },
   safe: {
     flex: 1,
@@ -123,7 +125,7 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   panel: {
-    backgroundColor: 'rgba(18,18,18,0.94)',
+    backgroundColor: colors.overlayPanel,
     borderColor: colors.line,
     borderRadius: 24,
     borderWidth: 1,

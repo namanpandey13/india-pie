@@ -26,6 +26,25 @@ npm run start --workspace=@hausy/mobile
 
 Scan the QR code from Expo Go.
 
+## Security And Repo Hygiene
+
+Use `.env.example` for placeholders only. Real secrets belong in local ignored `.env` files,
+Supabase project settings, EAS secrets, or deployment provider environment variables.
+
+Before pushing, run:
+
+```bash
+npm run audit:tracked
+npm run audit:secrets
+```
+
+If `audit:tracked` reports generated files or credentials, remove them from Git while keeping
+the local copy:
+
+```bash
+git rm --cached <path>
+```
+
 ## Current Prototype Scope
 
 The build is local-state only. It is meant to test flow, positioning, and trust cues before auth, backend, payments, notifications, or real chat.

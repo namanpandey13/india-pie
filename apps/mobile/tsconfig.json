@@ -5,9 +5,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
+      "@hausy/api": ["../../packages/api/src/index.ts"],
       "@hausy/design-tokens": ["../../packages/design-tokens/src/index.ts"],
       "@hausy/types": ["../../packages/types/src/index.ts"],
-      "@hausy/ui": ["../../packages/ui/src/index.ts"]
+      "@hausy/ui": ["../../packages/ui/src/index.tsx"],
+      "@hausy/utils": ["../../packages/utils/src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"]

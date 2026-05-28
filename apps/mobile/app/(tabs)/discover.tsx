@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
@@ -12,22 +11,12 @@ import {
   Screen,
   SectionTitle,
   TopBar,
-} from '@/components/mvp-kit';
-import { city, events, tags } from '@/data/mvp';
+} from '@hausy/ui';
+import { useDiscoverEvents } from '@/features/events/use-discover-events';
 
 export default function DiscoverScreen() {
-  const [activeTag, setActiveTag] = useState('all');
-  const [saved, setSaved] = useState<string[]>(['lodhi-photo-walk']);
-  const [joined] = useState<string[]>(['hk-boardgames']);
-
-  const visibleEvents =
-    activeTag === 'all' ? events : events.filter((event) => event.tags.includes(activeTag));
-
-  function toggleSaved(id: string) {
-    setSaved((current) =>
-      current.includes(id) ? current.filter((eventId) => eventId !== id) : [...current, id],
-    );
-  }
+  const { activeTag, city, eventTags, joined, saved, setActiveTag, toggleSaved, visibleEvents } =
+    useDiscoverEvents();
 
   return (
     <Screen>
@@ -63,7 +52,7 @@ export default function DiscoverScreen() {
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillRow}>
-        {tags.map((tag) => (
+        {eventTags.map((tag) => (
           <Pill
             key={tag}
             label={tag}

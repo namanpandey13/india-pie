@@ -14,7 +14,9 @@
     "typecheck": "turbo run typecheck",
     "mobile": "npm run start --workspace=@hausy/mobile",
     "web": "npm run dev --workspace=@hausy/web",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "audit:tracked": "bash ./scripts/tracked-file-audit.sh",
+    "audit:secrets": "bash ./scripts/security-audit.sh"
   },
   "devDependencies": {
     "eslint": "^9.25.0",

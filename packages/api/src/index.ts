@@ -1,10 +1,14 @@
-import type { Event } from '@hausy/types';
+import type { Chat, Event, HostDraft, LoginProfile } from '@hausy/types';
+
+export type EventFilters = {
+  tag?: string;
+};
 
 export const city = 'Delhi NCR';
+export const eventTags = ['all', 'free', 'today', 'curated', 'creator-led', 'friends going'];
+export const hostTemplates = ['game night', 'photo walk', 'builders dinner', 'listening party'];
 
-export const tags = ['all', 'free', 'today', 'curated', 'creator-led', 'friends going'];
-
-export const events: Event[] = [
+const events: Event[] = [
   {
     id: 'hk-boardgames',
     title: 'Board Game Baithak',
@@ -26,7 +30,7 @@ export const events: Event[] = [
       repeatRate: '72%',
       links: ['Instagram verified', 'LinkedIn linked'],
       initials: 'TS',
-      color: '#BFF36B',
+      color: 'lime',
     },
     attendees: [
       {
@@ -36,7 +40,7 @@ export const events: Event[] = [
         signal: '2 mutuals, also into Catan',
         status: 'confirmed',
         initials: 'RM',
-        color: '#F77258',
+        color: 'coral',
       },
       {
         id: 'arjun',
@@ -45,7 +49,7 @@ export const events: Event[] = [
         signal: 'Attended 3 plans',
         status: 'confirmed',
         initials: 'AB',
-        color: '#8FA7FF',
+        color: 'blue',
       },
       {
         id: 'isha',
@@ -54,7 +58,7 @@ export const events: Event[] = [
         signal: 'Host-approved',
         status: 'host-approved',
         initials: 'IS',
-        color: '#F6C85F',
+        color: 'yellow',
       },
       {
         id: 'kabir',
@@ -63,7 +67,7 @@ export const events: Event[] = [
         signal: 'Friend of Naman',
         status: 'maybe',
         initials: 'KS',
-        color: '#AF7BFF',
+        color: 'violet',
       },
     ],
     capacity: 18,
@@ -106,7 +110,7 @@ export const events: Event[] = [
       repeatRate: '64%',
       links: ['Instagram verified', 'Portfolio linked'],
       initials: 'ZK',
-      color: '#71E4FF',
+      color: 'blue',
     },
     attendees: [
       {
@@ -116,7 +120,7 @@ export const events: Event[] = [
         signal: 'Bringing a point-and-shoot',
         status: 'confirmed',
         initials: 'NK',
-        color: '#BFF36B',
+        color: 'lime',
       },
       {
         id: 'mehak',
@@ -125,7 +129,7 @@ export const events: Event[] = [
         signal: '3 shared interests',
         status: 'confirmed',
         initials: 'MJ',
-        color: '#F77258',
+        color: 'coral',
       },
       {
         id: 'advait',
@@ -134,7 +138,7 @@ export const events: Event[] = [
         signal: 'Host-approved',
         status: 'host-approved',
         initials: 'AR',
-        color: '#8FA7FF',
+        color: 'blue',
       },
     ],
     capacity: 14,
@@ -148,11 +152,7 @@ export const events: Event[] = [
       'Small group cap',
       'Post-walk cafe plan included',
     ],
-    prompts: [
-      'What do you usually photograph?',
-      'Film, phone, or mirrorless?',
-      'Coffee after the walk?',
-    ],
+    prompts: ['What do you usually photograph?', 'Film, phone, or mirrorless?', 'Coffee after the walk?'],
     confidenceScore: 86,
     friendContext: 'Mehak is connected through 3 design people',
   },
@@ -177,7 +177,7 @@ export const events: Event[] = [
       repeatRate: '58%',
       links: ['LinkedIn linked', 'Past host reviews visible'],
       initials: 'DA',
-      color: '#F6C85F',
+      color: 'yellow',
     },
     attendees: [
       {
@@ -187,7 +187,7 @@ export const events: Event[] = [
         signal: 'Confirmed',
         status: 'confirmed',
         initials: 'NO',
-        color: '#AF7BFF',
+        color: 'violet',
       },
       {
         id: 'samar',
@@ -196,7 +196,7 @@ export const events: Event[] = [
         signal: '2 mutuals',
         status: 'confirmed',
         initials: 'SV',
-        color: '#71E4FF',
+        color: 'blue',
       },
       {
         id: 'tanya',
@@ -205,7 +205,7 @@ export const events: Event[] = [
         signal: 'Host-approved',
         status: 'host-approved',
         initials: 'TB',
-        color: '#F77258',
+        color: 'coral',
       },
     ],
     capacity: 12,
@@ -229,7 +229,7 @@ export const events: Event[] = [
   },
 ];
 
-export const chats = [
+const chats: Chat[] = [
   {
     id: 'chat-boardgames',
     eventId: 'hk-boardgames',
@@ -250,11 +250,44 @@ export const chats = [
   },
 ];
 
-export const loginProfile = {
+const profile: LoginProfile = {
+  id: 'demo-user',
   name: 'Naman Pandey',
   phone: '+91 98765 43210',
   city,
   instagram: '@naman.jpg',
   linkedin: 'linkedin.com/in/namanpandey',
   intent: 'Meet ambitious people offline without WhatsApp chaos',
+  initials: 'NP',
 };
+
+export function listEvents(filters: EventFilters = {}) {
+  if (!filters.tag || filters.tag === 'all') {
+    return events;
+  }
+
+  return events.filter((event) => event.tags.includes(filters.tag as string));
+}
+
+export function getEventById(id?: string) {
+  return events.find((event) => event.id === id) ?? events[0];
+}
+
+export function listChatsForUser(_userId: string) {
+  return chats.map((chat) => ({
+    ...chat,
+    event: getEventById(chat.eventId),
+  }));
+}
+
+export function getProfile(_userId: string) {
+  return profile;
+}
+
+export function createHostDraft(input: HostDraft) {
+  return {
+    id: `draft-${input.template.replace(/\s+/g, '-')}`,
+    ...input,
+    status: 'draft' as const,
+  };
+}
