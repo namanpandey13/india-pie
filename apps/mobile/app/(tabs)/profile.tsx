@@ -53,7 +53,7 @@ export default function ProfileScreen() {
       <Card style={styles.settingsCard}>
         <Setting icon="people-outline" label="Prefer curated guest lists" />
         <Setting icon="shield-checkmark-outline" label="Show confirmed attendees before RSVP" />
-        <Setting icon="chatbubble-ellipses-outline" label="Keep event comms inside Aangan" />
+        <Setting icon="chatbubble-ellipses-outline" label="Keep event comms inside Hausy" />
       </Card>
     </Screen>
   );

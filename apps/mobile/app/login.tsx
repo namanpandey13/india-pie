@@ -17,7 +17,7 @@ export default function LoginScreen() {
       <View style={styles.overlay} />
       <SafeAreaView style={styles.safe}>
         <View style={styles.top}>
-          <Text style={styles.logo}>aangan</Text>
+          <Text style={styles.logo}>hausy</Text>
           <Text style={styles.kicker}>Delhi NCR private alpha</Text>
         </View>
 

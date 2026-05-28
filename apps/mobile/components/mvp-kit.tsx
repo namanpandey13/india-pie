@@ -11,26 +11,11 @@ import {
   ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '@hausy/ui';
 
-import type { Event } from '@/data/mvp';
+import type { Event } from '@hausy/types';
 
-export const colors = {
-  bg: '#050505',
-  ink: '#F7F2E8',
-  muted: '#A7A097',
-  faint: '#6D665F',
-  line: '#24211F',
-  surface: '#121212',
-  surfaceAlt: '#1C1A18',
-  surfaceLift: '#25221F',
-  lime: '#C8F86D',
-  coral: '#F77258',
-  blue: '#8FA7FF',
-  yellow: '#F6C85F',
-  violet: '#AF7BFF',
-  white: '#FFFFFF',
-  black: '#000000',
-};
+export { colors };
 
 export function Screen({ children }: PropsWithChildren) {
   return (
@@ -45,7 +30,7 @@ export function Screen({ children }: PropsWithChildren) {
   );
 }
 
-export function TopBar({ title = 'aangan' }: { title?: string }) {
+export function TopBar({ title = 'hausy' }: { title?: string }) {
   return (
     <View style={styles.topBar}>
       <Text style={styles.logo}>{title}</Text>

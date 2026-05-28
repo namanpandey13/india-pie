@@ -1,11 +1,19 @@
-# Aangan v0.1
+# Hausy v0.1
 
-An Expo Go prototype for a Delhi NCR-only, Pie-inspired offline social app.
+Hausy is a trust-first social discovery product for real-world experiences and recurring communities.
+
+This repo is now organized as a Phase 1 Turborepo monorepo:
+
+- `apps/mobile`: Expo SDK 54 app.
+- `apps/web`: placeholder Next.js shell.
+- `packages/design-tokens`: semantic color and typography tokens.
+- `packages/types`: shared Zod schemas and inferred TypeScript contracts.
+- `packages/ui`: shared UI package entrypoint.
 
 ## Try It On Laptop
 
 ```bash
-npm run web
+npm run web --workspace=@hausy/mobile
 ```
 
 Open the localhost URL Expo prints. The app starts at a fake prefilled login screen, then enters Discover.
@@ -13,7 +21,7 @@ Open the localhost URL Expo prints. The app starts at a fake prefilled login scr
 ## Try It On iPhone With Expo Go
 
 ```bash
-npm start
+npm run start --workspace=@hausy/mobile
 ```
 
 Scan the QR code from Expo Go.
