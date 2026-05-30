@@ -6,7 +6,7 @@
 import { Platform } from 'react-native';
 import { colors } from '@hausy/ui';
 
-const tintColorLight = colors.blue;
+const tintColorLight = colors.brand;
 const tintColorDark = colors.ink;
 
 export const Colors = {

@@ -1,5 +1,9 @@
-import { getProfile } from '@hausy/api';
+import { getCurrentUser } from '@hausy/api';
+import { useQuery } from '@tanstack/react-query';
 
 export function useLoginProfile() {
-  return getProfile('demo-user');
+  return useQuery({
+    queryKey: ['current-user'],
+    queryFn: getCurrentUser,
+  });
 }

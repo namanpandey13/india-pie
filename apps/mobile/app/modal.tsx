@@ -1,29 +1,39 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { router } from 'expo-router';
+import { StyleSheet, Text } from 'react-native';
+import { Card, GhostButton, Header, Screen, SectionTitle, typographyRoles, useThemeColors } from '@hausy/ui';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+export default function NotificationsScreen() {
+  const colors = useThemeColors();
 
-export default function ModalScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">This is a modal</ThemedText>
-      <Link href="/" dismissTo style={styles.link}>
-        <ThemedText type="link">Go to home screen</ThemedText>
-      </Link>
-    </ThemedView>
+    <Screen>
+      <Header
+        eyebrow="updates"
+        title="Plan-critical updates only."
+        subtitle="Host approvals, RSVP changes, and route proof will appear here after Supabase is connected."
+      />
+
+      <SectionTitle title="Today" action="0 updates" />
+      <Card style={styles.card}>
+        <Text style={[styles.title, { color: colors.ink }]}>No updates yet.</Text>
+        <Text style={[styles.body, { color: colors.muted }]}>
+          Hausy will keep notifications focused on trust and attendance, not engagement noise.
+        </Text>
+      </Card>
+
+      <GhostButton label="Back to app" icon="chevron-back" onPress={() => router.back()} />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+  card: {
+    gap: 8,
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+  title: {
+    ...typographyRoles.h3,
+  },
+  body: {
+    ...typographyRoles.body,
   },
 });

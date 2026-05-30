@@ -2,54 +2,72 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { colors } from '@hausy/ui';
+import { componentTokens, typographyRoles, useThemeColors } from '@hausy/ui';
 
 export default function TabLayout() {
+  const colors = useThemeColors();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.lime,
+        tabBarActiveTintColor: colors.brand,
         tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '800',
+          ...typographyRoles.caption,
         },
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.line,
-          height: 82,
-          paddingTop: 8,
+          height: componentTokens.controls.tabBarHeight,
+          paddingBottom: 8,
+          paddingTop: 6,
         },
+        tabBarItemStyle: {
+          minHeight: 56,
+          paddingVertical: 4,
+        },
+        tabBarHideOnKeyboard: true,
         headerShown: false,
-        tabBarButton: HapticTab,
       }}>
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="home-outline" color={color} />,
+        }}
+      />
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Discover',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="sparkles-outline" color={color} />,
+          title: 'Explore',
+          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="sparkles-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="host"
         options={{
-          title: 'Host',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="add-circle-outline" color={color} />,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="saved"
+        options={{
+          title: 'Saved',
+          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="bookmark-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="chatbubbles-outline" color={color} />,
+          title: 'Plan Inbox',
+          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="chatbubbles-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="person-circle-outline" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="person-circle-outline" color={color} />,
         }}
       />
     </Tabs>

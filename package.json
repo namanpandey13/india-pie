@@ -10,13 +10,15 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint && npm run audit:ui-tokens",
     "typecheck": "turbo run typecheck",
     "mobile": "npm run start --workspace=@hausy/mobile",
     "web": "npm run dev --workspace=@hausy/web",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "audit:tracked": "bash ./scripts/tracked-file-audit.sh",
-    "audit:secrets": "bash ./scripts/security-audit.sh"
+    "audit:secrets": "bash ./scripts/security-audit.sh",
+    "audit:ui-tokens": "bash ./scripts/ui-token-audit.sh"
   },
   "devDependencies": {
     "eslint": "^9.25.0",

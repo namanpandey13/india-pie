@@ -1,75 +1,83 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Avatar, Card, colors, Header, PrimaryButton, Screen, SectionTitle, TopBar } from '@hausy/ui';
+import { Card, Header, Screen, SectionTitle, TopBar, typographyRoles, useThemeColors } from '@hausy/ui';
 import { useChatOverview } from '@/features/chat/use-chat-overview';
+import { useAppStore } from '@/state/app-store';
 
 export default function ChatScreen() {
-  const { chats } = useChatOverview();
+  const colors = useThemeColors();
+  const { error, isLoading, threads } = useChatOverview();
+  const chatDrafts = useAppStore((state) => state.chatDrafts);
+  const chatMessages = useAppStore((state) => state.chatMessages);
+  const sendChatMessage = useAppStore((state) => state.sendChatMessage);
+  const setChatDraft = useAppStore((state) => state.setChatDraft);
 
   return (
     <Screen>
-      <TopBar />
+      <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
       <Header
-        eyebrow="chat"
-        title="plans stay inside the app."
-        subtitle="A fake chat layer for pre-event reassurance, route proof, host updates, and small-group warmups."
+        eyebrow="plan inbox"
+        title="Host updates stay close to the plan."
+        subtitle="RSVP status, route proof, and creator updates live here so guests do not need a WhatsApp migration."
       />
 
-      <SectionTitle title="active pre-chats" action="no WhatsApp" />
-      {chats.map((chat) => (
-          <Card key={chat.id} style={styles.chatCard}>
+      <SectionTitle title="Plan threads" action={`${threads.length} active`} />
+      {isLoading ? (
+        <Card style={styles.chatCard}>
+          <Text style={[styles.chatTitle, { color: colors.ink }]}>Loading plan inbox.</Text>
+        </Card>
+      ) : null}
+      {error ? (
+        <Card style={styles.chatCard}>
+          <Text style={[styles.chatTitle, { color: colors.ink }]}>Plan Inbox is unavailable.</Text>
+          <Text style={[styles.message, { backgroundColor: colors.surfaceAlt, color: colors.ink }]}>{error.message}</Text>
+        </Card>
+      ) : null}
+      {threads.map((thread) => (
+          <Card key={thread.id} style={styles.chatCard}>
             <View style={styles.chatTop}>
-              <View style={styles.stack}>
-                {chat.members.slice(0, 4).map((member, index) => (
-                  <View key={member} style={{ marginLeft: index === 0 ? 0 : -9 }}>
-                    <Avatar label={member.slice(0, 1)} color={['lime', 'coral', 'blue', 'yellow'][index]} size={36} />
-                  </View>
-                ))}
-              </View>
               <View style={styles.chatCopy}>
-                <Text style={styles.chatTitle}>{chat.title}</Text>
-                <Text style={styles.chatMeta}>
-                  {chat.members.length} members - {chat.event.locality}
-                </Text>
+                <Text style={[styles.chatTitle, { color: colors.ink }]}>{thread.title}</Text>
+                <Text style={[styles.chatMeta, { color: colors.muted }]}>Creator updates and RSVP context</Text>
               </View>
-              {chat.unread ? (
-                <View style={styles.unread}>
-                  <Text style={styles.unreadText}>{chat.unread}</Text>
+              {thread.unreadCount ? (
+                <View style={[styles.unread, { backgroundColor: colors.brand }]}>
+                  <Text style={[styles.unreadText, { color: colors.black }]}>{thread.unreadCount}</Text>
                 </View>
               ) : null}
             </View>
 
-            <Text style={styles.message}>{chat.lastMessage}</Text>
+            {thread.messages.map((message) => (
+              <Text key={message.id} style={[styles.message, { backgroundColor: colors.surfaceAlt, color: colors.ink }]}>{message.body}</Text>
+            ))}
 
-            <View style={styles.promptBox}>
-              <Ionicons name="sparkles-outline" size={17} color={colors.lime} />
-              <Text style={styles.prompt}>{chat.prompt}</Text>
-            </View>
+            {(chatMessages[thread.id] ?? []).map((message) => (
+              <Text key={message} style={[styles.sentMessage, { backgroundColor: colors.surfaceLift, color: colors.ink }]}>{message}</Text>
+            ))}
 
-            <View style={styles.replyRow}>
-              <Text style={styles.replyPlaceholder}>Message the group...</Text>
-              <Ionicons name="send" size={18} color={colors.lime} />
+            <View style={[styles.replyRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
+              <TextInput
+                value={chatDrafts[thread.id] ?? ''}
+                onChangeText={(value) => setChatDraft(thread.id, value)}
+                placeholder="Message this plan thread..."
+                placeholderTextColor={colors.faint}
+                style={[styles.replyInput, { color: colors.ink }]}
+              />
+              <Pressable onPress={() => sendChatMessage(thread.id)} hitSlop={8}>
+                <Ionicons name="send" size={18} color={colors.brand} />
+              </Pressable>
             </View>
           </Card>
         ))}
 
-      <SectionTitle title="stars aligned" action="people to meet" />
-      <Card style={styles.alignedCard}>
-        <View style={styles.alignedPeople}>
-          <View style={styles.personTile}>
-            <Avatar label="YO" color="lime" size={72} />
-            <Text style={styles.personLabel}>you</Text>
-          </View>
-          <Ionicons name="star" size={24} color={colors.ink} />
-          <View style={styles.personTile}>
-            <Avatar label="RI" color="coral" size={72} />
-            <Text style={styles.personLabel}>riya</Text>
-          </View>
-        </View>
-        <PrimaryButton label="start chat" icon="chatbubble-outline" />
-        <Text style={styles.dismiss}>dismiss</Text>
-      </Card>
+      {!isLoading && !error && threads.length === 0 ? (
+        <Card style={styles.alignedCard}>
+          <Text style={[styles.chatTitle, { color: colors.ink }]}>No plan threads yet.</Text>
+          <Text style={[styles.prompt, { color: colors.muted }]}>Threads appear after you request or join creator-led plans.</Text>
+        </Card>
+      ) : null}
     </Screen>
   );
 }
@@ -92,35 +100,24 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   chatTitle: {
-    color: colors.ink,
-    fontSize: 17,
-    fontWeight: '900',
+    ...typographyRoles.h3,
   },
   chatMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: '800',
+    ...typographyRoles.caption,
   },
   unread: {
     alignItems: 'center',
-    backgroundColor: colors.lime,
     borderRadius: 999,
     height: 24,
     justifyContent: 'center',
     width: 24,
   },
   unreadText: {
-    color: colors.black,
-    fontSize: 12,
-    fontWeight: '900',
+    ...typographyRoles.caption,
   },
   message: {
-    backgroundColor: colors.surfaceAlt,
     borderRadius: 14,
-    color: colors.ink,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 20,
+    ...typographyRoles.bodyStrong,
     padding: 12,
   },
   promptBox: {
@@ -129,15 +126,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   prompt: {
-    color: colors.muted,
     flex: 1,
-    fontSize: 13,
-    fontWeight: '800',
+    ...typographyRoles.caption,
   },
   replyRow: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
-    borderColor: colors.line,
     borderRadius: 999,
     borderWidth: 1,
     flexDirection: 'row',
@@ -146,9 +139,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   replyPlaceholder: {
-    color: colors.faint,
-    fontSize: 14,
-    fontWeight: '800',
+    ...typographyRoles.bodyStrong,
+  },
+  replyInput: {
+    flex: 1,
+    ...typographyRoles.bodyStrong,
+    minHeight: 44,
+  },
+  sentMessage: {
+    alignSelf: 'flex-end',
+    borderRadius: 14,
+    ...typographyRoles.bodyStrong,
+    maxWidth: '86%',
+    padding: 12,
   },
   alignedCard: {
     gap: 16,
@@ -164,14 +167,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   personLabel: {
-    color: colors.ink,
-    fontSize: 13,
-    fontWeight: '900',
+    ...typographyRoles.caption,
   },
   dismiss: {
-    color: colors.muted,
-    fontSize: 14,
-    fontWeight: '900',
+    ...typographyRoles.label,
     textAlign: 'center',
   },
 });

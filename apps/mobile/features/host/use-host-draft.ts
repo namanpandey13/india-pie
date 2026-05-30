@@ -1,24 +1,29 @@
 import { createHostDraft, hostTemplates } from '@hausy/api';
 import type { HostVisibility } from '@hausy/types';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useAppStore } from '@/state/app-store';
 
 export function useHostDraft() {
-  const [template, setTemplate] = useState(hostTemplates[0]);
-  const [visibility, setVisibility] = useState<HostVisibility>('curated');
-  const [title, setTitle] = useState('Khan Market coffee table for new operators');
-  const [capacity, setCapacity] = useState('14');
+  const hostDraft = useAppStore((state) => state.hostDraft);
+  const saveHostDraft = useAppStore((state) => state.saveHostDraft);
+  const setHostDraft = useAppStore((state) => state.setHostDraft);
+  const submitHostDraftForReview = useAppStore((state) => state.submitHostDraftForReview);
+  const { capacity, template, title, visibility } = hostDraft;
   const draft = useMemo(
-    () => createHostDraft({ template, visibility, title, capacity }),
+    () => createHostDraft({ template, visibility, title, capacity }).data,
     [capacity, template, title, visibility],
   );
 
   return {
     capacity,
     draft,
-    setCapacity,
-    setTemplate,
-    setTitle,
-    setVisibility,
+    hostDraft,
+    saveHostDraft,
+    submitHostDraftForReview,
+    setCapacity: (next: string) => setHostDraft({ capacity: next }),
+    setTemplate: (next: string) => setHostDraft({ template: next }),
+    setTitle: (next: string) => setHostDraft({ title: next }),
+    setVisibility: (next: HostVisibility) => setHostDraft({ visibility: next }),
     template,
     templates: hostTemplates,
     title,
