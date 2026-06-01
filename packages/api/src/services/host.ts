@@ -1,7 +1,36 @@
-import type { ApiResult, CreatorSubmission, HostDraft, HostProfile } from '@hausy/types';
+import type { ApiResult, CreatorProfile, CreatorSubmission, HostDraft, HostProfile } from '@hausy/types';
+import { getApiClient, getAuthenticatedProfileId } from '../client';
+import {
+  selectActiveCreatorTemplates,
+  selectCreatorById,
+  selectCreatorCredentialsByCreatorId,
+  selectCreatorLinksByCreatorId,
+} from '../queries/creators';
 import { fail, ok } from '../result';
+import {
+  mapCreatorProfile,
+  mapHostProfile,
+} from './event-mappers';
 
-export const hostTemplates = ['game night', 'photo walk', 'builders dinner', 'listening party'];
+export async function listCreatorTemplates() {
+  const client = getApiClient();
+
+  if (!client) {
+    return fail<string[]>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+  }
+
+  try {
+    const { data, error } = await selectActiveCreatorTemplates(client);
+
+    if (error) {
+      return fail<string[]>('creator_templates_unavailable', error.message ?? 'Could not load creator templates.', true);
+    }
+
+    return ok((data ?? []).map((template) => template.label));
+  } catch {
+    return fail<string[]>('creator_templates_unavailable', 'Could not load creator templates.', true);
+  }
+}
 
 export function createHostDraft(input: HostDraft): ApiResult<HostDraft & { id: string; status: 'draft' }> {
   try {
@@ -15,16 +44,55 @@ export function createHostDraft(input: HostDraft): ApiResult<HostDraft & { id: s
   }
 }
 
-export function getHostProfile(hostId: string) {
+export async function getHostProfile(hostId: string) {
+  const client = getApiClient();
+
+  if (!client) {
+    return fail<HostProfile | null>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+  }
+
   try {
-    void hostId;
-    return ok<HostProfile | null>(null);
+    const [{ data: creator, error }, linksResult, credentialsResult] = await Promise.all([
+      selectCreatorById(client, hostId),
+      selectCreatorLinksByCreatorId(client, hostId),
+      selectCreatorCredentialsByCreatorId(client, hostId),
+    ]);
+
+    if (error || linksResult.error || credentialsResult.error) {
+      return fail<HostProfile | null>(
+        'creator_unavailable',
+        error?.message ?? linksResult.error?.message ?? credentialsResult.error?.message ?? 'Could not load this creator.',
+        true,
+      );
+    }
+
+    return ok<HostProfile | null>(creator ? mapHostProfile(creator, linksResult.data ?? [], credentialsResult.data ?? []) : null);
   } catch {
     return fail<HostProfile | null>('creator_unavailable', 'Could not load this creator.', true);
   }
 }
 
-export function createCreatorSubmission(input: Omit<CreatorSubmission, 'id' | 'status'>) {
+export async function getCreatorProfile(creatorId: string): Promise<ApiResult<CreatorProfile | null>> {
+  const client = getApiClient();
+
+  if (!client) {
+    return fail<CreatorProfile | null>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+  }
+
+  const [{ data: creator, error }, linksResult, credentialsResult] = await Promise.all([
+    selectCreatorById(client, creatorId),
+    selectCreatorLinksByCreatorId(client, creatorId),
+    selectCreatorCredentialsByCreatorId(client, creatorId),
+  ]);
+
+  if (error || linksResult.error || credentialsResult.error || !creator) {
+    return fail<CreatorProfile | null>('creator_unavailable', error?.message ?? 'Could not load this creator.', true);
+  }
+
+  return ok<CreatorProfile | null>(mapCreatorProfile(creator, linksResult.data ?? [], credentialsResult.data ?? []));
+}
+
+export async function createCreatorSubmission(input: Omit<CreatorSubmission, 'id' | 'status'>) {
   try {
     return ok<CreatorSubmission>({
       ...input,
@@ -36,7 +104,14 @@ export function createCreatorSubmission(input: Omit<CreatorSubmission, 'id' | 's
   }
 }
 
-export function submitCreatorEvent(input: CreatorSubmission) {
+export async function submitCreatorEvent(input: CreatorSubmission) {
+  const client = getApiClient();
+  const profileId = await getAuthenticatedProfileId();
+
+  if (!client || !profileId) {
+    return fail<CreatorSubmission>('auth_required', 'Sign in before submitting a creator plan.', false);
+  }
+
   try {
     return ok<CreatorSubmission>({
       ...input,

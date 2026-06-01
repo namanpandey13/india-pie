@@ -29,7 +29,7 @@ export function EventCard({
       <Image source={{ uri: event.image }} style={styles.eventImage} contentFit="cover" />
       <View style={[styles.eventOverlay, { backgroundColor: colors.overlaySoft }]} />
       <View style={[styles.eventPoster, { backgroundColor: colors.overlayMedium, borderColor: colors.overlayLight }]}>
-        <Typography variant="h2" style={styles.posterText}>
+        <Typography variant="h2" style={[styles.posterText, { color: colors.white }]}>
           {event.posterText}
         </Typography>
       </View>

@@ -10,7 +10,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint && npm run audit:ui-tokens",
+    "lint": "turbo run lint && npm run audit:ui-tokens && npm run audit:api-boundary",
     "typecheck": "turbo run typecheck",
     "mobile": "npm run start --workspace=@hausy/mobile",
     "web": "npm run dev --workspace=@hausy/web",
@@ -18,7 +18,9 @@
     "format:check": "prettier --check .",
     "audit:tracked": "bash ./scripts/tracked-file-audit.sh",
     "audit:secrets": "bash ./scripts/security-audit.sh",
-    "audit:ui-tokens": "bash ./scripts/ui-token-audit.sh"
+    "audit:ui-tokens": "bash ./scripts/ui-token-audit.sh",
+    "audit:api-boundary": "bash ./scripts/api-query-boundary-audit.sh",
+    "supabase:health": "node ./scripts/supabase-health-check.mjs"
   },
   "devDependencies": {
     "eslint": "^9.25.0",

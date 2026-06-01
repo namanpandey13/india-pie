@@ -6,6 +6,7 @@ export type RsvpDraft = {
   answers: Record<string, string>;
   eventId: string;
   note: string;
+  requestId?: string;
   selectedDate: string;
   status: 'draft' | RsvpStatus;
 };
@@ -54,11 +55,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   dismissedConnectionPrompts: [],
   followedHosts: [],
-  colorScheme: 'dark',
+  colorScheme: 'light',
   hostDraft: {
     capacity: '14',
     submittedForReview: false,
-    template: 'game night',
+    template: '',
     title: '',
     visibility: 'curated',
   },

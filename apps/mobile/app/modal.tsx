@@ -1,8 +1,23 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { StyleSheet, Text } from 'react-native';
 import { Card, GhostButton, Header, Screen, SectionTitle, typographyRoles, useThemeColors } from '@hausy/ui';
+import { useAuthSession } from '@/lib/auth-session';
 
 export default function NotificationsScreen() {
+  const { isLoading, isSignedIn } = useAuthSession();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/login" />;
+  }
+
+  return <ProtectedNotificationsScreen />;
+}
+
+function ProtectedNotificationsScreen() {
   const colors = useThemeColors();
 
   return (

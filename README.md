@@ -70,11 +70,25 @@ The launch MVP is trust-first and production-shaped. Frontend screens use typed 
 
 ## Supabase Setup
 
-Create a local ignored `.env` from `.env.example`:
+Create local ignored env files from the examples. The Expo app reads the one inside `apps/mobile` when you run `npm run start --workspace=@hausy/mobile`.
 
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key_here
+EXPO_PUBLIC_AUTH_REDIRECT_SCHEME=hausy
+EXPO_PUBLIC_AUTH_REDIRECT_PATH=auth/callback
 ```
 
 Use publishable client keys only in Expo. Never commit Supabase secret keys, service-role keys, OAuth client secrets, EAS credentials, or native signing files.
+
+For Google OAuth, add this redirect URL to Supabase Auth redirect allow list:
+
+```text
+hausy://auth/callback
+```
+
+In Google Cloud OAuth, configure Supabase's callback URL:
+
+```text
+https://<project-ref>.supabase.co/auth/v1/callback
+```

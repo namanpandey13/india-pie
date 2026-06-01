@@ -1,5 +1,5 @@
 # Dev Fixtures
 
-These records are isolated from production services.
+Frontend fixture records have been removed.
 
-Production adapters must not import from this folder. Use these only for local visual QA or staging seed preparation.
+Production adapters must not import from this folder. Use `supabase/seed.sql` for local or staging data setup.

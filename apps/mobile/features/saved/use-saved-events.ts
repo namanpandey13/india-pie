@@ -1,17 +1,24 @@
-import { useMemo } from 'react';
-import { listEvents } from '@hausy/api';
-import { useAppStore } from '@/state/app-store';
+import { listSavedEvents, toggleSavedEvent } from '@hausy/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export function useSavedEvents() {
-  const savedEventIds = useAppStore((state) => state.savedEventIds);
-  const toggleSaved = useAppStore((state) => state.toggleSavedEvent);
-  const savedEvents = useMemo(
-    () => (listEvents().data ?? []).filter((event) => savedEventIds.includes(event.id)),
-    [savedEventIds],
-  );
+  const queryClient = useQueryClient();
+  const savedQuery = useQuery({
+    queryKey: ['saved-events'],
+    queryFn: listSavedEvents,
+  });
+  const toggleSaved = useMutation({
+    mutationFn: (eventId: string) => toggleSavedEvent(eventId, false),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-events'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
 
   return {
-    savedEvents,
-    toggleSaved,
+    error: savedQuery.data?.error ?? null,
+    isLoading: savedQuery.isLoading,
+    savedEvents: savedQuery.data?.data ?? [],
+    toggleSaved: (eventId: string) => toggleSaved.mutate(eventId),
   };
 }

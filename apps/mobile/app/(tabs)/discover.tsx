@@ -68,7 +68,7 @@ export default function DiscoverScreen() {
         {isLoading ? (
           <Card style={styles.emptyCard}>
             <Text style={[styles.emptyTitle, { color: colors.ink }]}>Loading plans.</Text>
-            <Text style={[styles.emptyBody, { color: colors.muted }]}>Checking creator-led events in Delhi NCR.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>Checking creator-led events in {city}.</Text>
           </Card>
         ) : null}
         {error ? (

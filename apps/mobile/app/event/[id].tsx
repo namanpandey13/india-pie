@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PhotoHero, typographyRoles, useThemeColors } from '@hausy/ui';
@@ -15,15 +15,27 @@ import {
 } from '@/features/events/components/event-trust-sections';
 import { useEventDetail } from '@/features/events/use-event-detail';
 import { useRsvpRequest } from '@/features/rsvp/use-rsvp-request';
-import { listEvents } from '@hausy/api';
+import { useAuthSession } from '@/lib/auth-session';
 
 export function generateStaticParams() {
-  return (listEvents().data ?? []).map((event) => ({
-    id: event.id,
-  }));
+  return [];
 }
 
 export default function EventDetailScreen() {
+  const { isLoading, isSignedIn } = useAuthSession();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/login" />;
+  }
+
+  return <ProtectedEventDetailScreen />;
+}
+
+function ProtectedEventDetailScreen() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const {

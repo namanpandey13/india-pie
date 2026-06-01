@@ -9,9 +9,12 @@ import { supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
+const authRedirectScheme = process.env.EXPO_PUBLIC_AUTH_REDIRECT_SCHEME || 'hausy';
+const authRedirectPath = process.env.EXPO_PUBLIC_AUTH_REDIRECT_PATH || 'auth/callback';
+
 const redirectTo = makeRedirectUri({
-  scheme: 'hausy',
-  path: 'auth/callback',
+  scheme: authRedirectScheme,
+  path: authRedirectPath,
 });
 
 export async function createSessionFromUrl(url: string): Promise<ApiResult<AuthUser | null>> {
@@ -26,7 +29,18 @@ export async function createSessionFromUrl(url: string): Promise<ApiResult<AuthU
       return fail('oauth_error', errorCode, true);
     }
 
-    const { access_token, refresh_token } = params;
+    const { access_token, code, refresh_token } = params;
+
+    if (code && typeof code === 'string') {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (error) {
+        logAppEvent('error', 'auth.exchangeCodeForSession', { message: error.message });
+        return fail('session_error', 'Could not finish Google sign-in.', true);
+      }
+
+      return ok(mapAuthUser(data.user));
+    }
 
     if (!access_token || !refresh_token) {
       return ok(null);

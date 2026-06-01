@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { sendPlanInboxMessage } from '@hausy/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Card, Header, Screen, SectionTitle, TopBar, typographyRoles, useThemeColors } from '@hausy/ui';
@@ -9,10 +11,22 @@ import { useAppStore } from '@/state/app-store';
 export default function ChatScreen() {
   const colors = useThemeColors();
   const { error, isLoading, threads } = useChatOverview();
+  const queryClient = useQueryClient();
   const chatDrafts = useAppStore((state) => state.chatDrafts);
-  const chatMessages = useAppStore((state) => state.chatMessages);
-  const sendChatMessage = useAppStore((state) => state.sendChatMessage);
   const setChatDraft = useAppStore((state) => state.setChatDraft);
+  const sendMutation = useMutation({
+    mutationFn: (threadId: string) =>
+      sendPlanInboxMessage({
+        authorId: '',
+        body: chatDrafts[threadId] ?? '',
+        kind: 'message',
+        threadId,
+      }),
+    onSuccess: (_result, threadId) => {
+      setChatDraft(threadId, '');
+      queryClient.invalidateQueries({ queryKey: ['plan-inbox-threads'] });
+    },
+  });
 
   return (
     <Screen>
@@ -53,10 +67,6 @@ export default function ChatScreen() {
               <Text key={message.id} style={[styles.message, { backgroundColor: colors.surfaceAlt, color: colors.ink }]}>{message.body}</Text>
             ))}
 
-            {(chatMessages[thread.id] ?? []).map((message) => (
-              <Text key={message} style={[styles.sentMessage, { backgroundColor: colors.surfaceLift, color: colors.ink }]}>{message}</Text>
-            ))}
-
             <View style={[styles.replyRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
               <TextInput
                 value={chatDrafts[thread.id] ?? ''}
@@ -65,7 +75,14 @@ export default function ChatScreen() {
                 placeholderTextColor={colors.faint}
                 style={[styles.replyInput, { color: colors.ink }]}
               />
-              <Pressable onPress={() => sendChatMessage(thread.id)} hitSlop={8}>
+              <Pressable
+                onPress={() => {
+                  if (chatDrafts[thread.id]?.trim()) {
+                    sendMutation.mutate(thread.id);
+                  }
+                }}
+                hitSlop={8}
+              >
                 <Ionicons name="send" size={18} color={colors.brand} />
               </Pressable>
             </View>

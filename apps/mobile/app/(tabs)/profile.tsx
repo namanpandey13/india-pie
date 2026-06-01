@@ -37,7 +37,7 @@ export default function ProfileScreen() {
 
       <Card style={styles.profileCard}>
         <View style={styles.profileTop}>
-          <Avatar label={profile?.initials ?? 'HS'} color="coral" size={68} />
+          <Avatar label={profile?.initials ?? 'HS'} color="violet" size={68} />
           <View style={styles.profileCopy}>
             <Text style={[styles.name, { color: colors.ink }]}>{profile?.name ?? 'Complete your Hausy profile'}</Text>
             <Text style={[styles.city, { color: colors.muted }]}>{profile?.city ?? 'Google identity connected after sign-in'}</Text>

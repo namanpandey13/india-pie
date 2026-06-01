@@ -1,95 +1,128 @@
 import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Card,
-  GhostButton,
-  Header,
-  PrimaryButton,
+  CompactEventCard,
+  EditorialCategoryTabs,
+  EditorialHomeHeader,
+  EditorialSearch,
+  FeaturedEventCard,
   Screen,
-  SectionTitle,
-  TopBar,
   typographyRoles,
   useThemeColors,
 } from '@hausy/ui';
-import { listHomeSummary } from '@hausy/api';
+import { listDiscoveryMetadata, listEvents, toggleSavedEvent as toggleSavedEventRemote } from '@hausy/api';
+import { useEffect, useMemo, useState } from 'react';
+import { useAppStore } from '@/state/app-store';
 
 export default function HomeScreen() {
   const colors = useThemeColors();
-  const summaryQuery = useQuery({
-    queryKey: ['home-summary'],
-    queryFn: listHomeSummary,
+  const [activeTab, setActiveTab] = useState('');
+  const [query, setQuery] = useState('');
+  const queryClient = useQueryClient();
+  const saved = useAppStore((state) => state.savedEventIds);
+  const toggleSavedEventLocal = useAppStore((state) => state.toggleSavedEvent);
+  const eventsQuery = useQuery({
+    queryKey: ['home-events', activeTab, query],
+    queryFn: () => listEvents({ tag: activeTab, query }),
   });
-  const summary = summaryQuery.data?.data;
+  const metadataQuery = useQuery({
+    queryKey: ['discovery-metadata'],
+    queryFn: listDiscoveryMetadata,
+  });
+  const eventTags = useMemo(() => metadataQuery.data?.data?.eventTags ?? [], [metadataQuery.data]);
+  const events = eventsQuery.data?.data ?? [];
+  const featuredEvent = events[0];
+  const compactEvents = events.slice(1, 5);
+  const saveMutation = useMutation({
+    mutationFn: ({ eventId, saved: nextSaved }: { eventId: string; saved: boolean }) =>
+      toggleSavedEventRemote(eventId, nextSaved),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-events'] });
+    },
+  });
+
+  function openEvent(id: string) {
+    router.push({ pathname: '/event/[id]', params: { id } });
+  }
+
+  useEffect(() => {
+    if (!activeTab && eventTags[0]) {
+      setActiveTab(eventTags[0]);
+    }
+  }, [activeTab, eventTags]);
 
   return (
     <Screen>
-      <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
-      <Header
-        eyebrow="home"
-        title="Your offline plans, calmly organized."
-        subtitle="Track RSVP requests, saved plans, and creator updates without turning Hausy into a feed."
-      />
+      <EditorialHomeHeader city={metadataQuery.data?.data?.city ?? 'Launch region'} onNotificationPress={() => router.push('/modal')} />
+      <EditorialSearch query={query} onChangeQuery={setQuery} />
+      <EditorialCategoryTabs activeTab={activeTab} tabs={eventTags} onChangeTab={setActiveTab} />
 
-      <Card style={styles.summaryCard}>
-        <View style={styles.metricRow}>
-          <Metric label="RSVPs" value={summary?.upcomingRsvpCount ?? 0} />
-          <Metric label="Saved" value={summary?.savedCount ?? 0} />
-          <Metric label="Inbox" value={summary?.inboxUnreadCount ?? 0} />
-        </View>
-        <PrimaryButton label="Explore plans" icon="sparkles-outline" onPress={() => router.push('/discover')} />
-      </Card>
+      <View style={styles.feed}>
+        {featuredEvent ? (
+          <FeaturedEventCard
+            event={featuredEvent}
+            saved={saved.includes(featuredEvent.id)}
+            onPress={() => openEvent(featuredEvent.id)}
+            onSave={() => {
+              const nextSaved = toggleSavedEventLocal(featuredEvent.id);
+              saveMutation.mutate({ eventId: featuredEvent.id, saved: nextSaved });
+            }}
+          />
+        ) : null}
 
-      <SectionTitle title="Creator spotlight" action="Coming soon" />
-      <Card style={styles.emptyCard}>
-        <Text style={[styles.emptyTitle, { color: colors.ink }]}>Creators are under review.</Text>
-        <Text style={[styles.emptyBody, { color: colors.muted }]}>
-          Hausy will only surface creator-led plans after identity, venue, and trust checks are in place.
-        </Text>
-        <GhostButton label="Open Creator Studio" icon="create-outline" onPress={() => router.push('/profile')} />
-      </Card>
+        {compactEvents.map((event) => (
+          <CompactEventCard
+            key={event.id}
+            event={event}
+            saved={saved.includes(event.id)}
+            onPress={() => openEvent(event.id)}
+            onSave={() => {
+              const nextSaved = toggleSavedEventLocal(event.id);
+              saveMutation.mutate({ eventId: event.id, saved: nextSaved });
+            }}
+          />
+        ))}
+
+        {eventsQuery.isLoading ? (
+          <View style={[styles.emptyState, { borderColor: colors.line, backgroundColor: colors.surfaceAlt }]}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Finding rooms worth leaving home for.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>Checking host-led plans around you.</Text>
+          </View>
+        ) : null}
+
+        {eventsQuery.data?.error ? (
+          <View style={[styles.emptyState, { borderColor: colors.line, backgroundColor: colors.surfaceAlt }]}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Home is unavailable.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>{eventsQuery.data.error.message}</Text>
+          </View>
+        ) : null}
+
+        {!eventsQuery.isLoading && !eventsQuery.data?.error && events.length === 0 ? (
+          <View style={[styles.emptyState, { borderColor: colors.line, backgroundColor: colors.surfaceAlt }]}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>No rooms match this search.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>Try For You, Coffee, Music, or a different neighbourhood.</Text>
+          </View>
+        ) : null}
+      </View>
     </Screen>
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
-  const colors = useThemeColors();
-
-  return (
-    <View style={[styles.metric, { backgroundColor: colors.surfaceAlt }]}>
-      <Text style={[styles.metricValue, { color: colors.brand }]}>{value}</Text>
-      <Text style={[styles.metricLabel, { color: colors.muted }]}>{label}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  summaryCard: {
-    gap: 16,
-  },
-  metricRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  metric: {
-    borderRadius: 14,
-    flex: 1,
-    gap: 4,
-    padding: 12,
-  },
-  metricValue: {
-    ...typographyRoles.h2,
-  },
-  metricLabel: {
-    ...typographyRoles.caption,
-  },
-  emptyCard: {
-    gap: 12,
+  feed: {
+    gap: 18,
   },
   emptyTitle: {
     ...typographyRoles.h3,
   },
   emptyBody: {
     ...typographyRoles.body,
+  },
+  emptyState: {
+    borderRadius: 18,
+    borderWidth: 1,
+    gap: 6,
+    padding: 18,
   },
 });

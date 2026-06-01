@@ -1,24 +1,34 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
 import { componentTokens, typographyRoles, useThemeColors } from '@hausy/ui';
+import { useAuthSession } from '@/lib/auth-session';
 
 export default function TabLayout() {
   const colors = useThemeColors();
+  const { isLoading, isSignedIn } = useAuthSession();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/login" />;
+  }
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.brand,
+        tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: {
-          ...typographyRoles.caption,
+          ...typographyRoles.micro,
         },
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.line,
-          height: componentTokens.controls.tabBarHeight,
+          height: 78,
           paddingBottom: 8,
           paddingTop: 6,
         },
@@ -33,14 +43,18 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="home-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'home' : 'home-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="sparkles-outline" color={color} />,
+          title: 'Discover',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'compass' : 'compass-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -53,21 +67,37 @@ export default function TabLayout() {
         name="saved"
         options={{
           title: 'Saved',
-          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="bookmark-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'bookmark' : 'bookmark-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Plan Inbox',
-          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="chatbubbles-outline" color={color} />,
+          title: 'Chats',
+          tabBarBadge: '',
+          tabBarBadgeStyle: {
+            backgroundColor: colors.brand,
+            borderRadius: 4,
+            height: 8,
+            minWidth: 8,
+            right: 23,
+            top: 8,
+            width: 8,
+          },
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'chatbubble' : 'chatbubble-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <Ionicons size={componentTokens.controls.tabIconSize} name="person-circle-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'person' : 'person-outline'} color={color} />
+          ),
         }}
       />
     </Tabs>

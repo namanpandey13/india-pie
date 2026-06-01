@@ -25,7 +25,7 @@ export function PhotoHero({
         <Pressable
           onPress={onBack}
           style={[styles.floatingIcon, styles.backIcon, { backgroundColor: colors.overlayMedium, borderColor: colors.overlayBorder }]}>
-          <Ionicons name="chevron-back" size={20} color={colors.ink} />
+          <Ionicons name="chevron-back" size={20} color={colors.white} />
         </Pressable>
       ) : null}
       <View style={styles.heroActions}>
@@ -34,12 +34,12 @@ export function PhotoHero({
             key={action.icon}
             onPress={action.onPress}
             style={[styles.floatingIcon, { backgroundColor: colors.overlayMedium, borderColor: colors.overlayBorder }]}>
-            <Ionicons name={action.icon} size={19} color={colors.ink} />
+            <Ionicons name={action.icon} size={19} color={colors.white} />
           </Pressable>
         ))}
       </View>
       <View style={[styles.poster, { backgroundColor: colors.overlayMedium, borderColor: colors.overlayLight }]}>
-        <Typography variant="h1" style={styles.posterText}>
+        <Typography variant="h1" style={[styles.posterText, { color: colors.white }]}>
           {title}
         </Typography>
       </View>

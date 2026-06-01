@@ -3,47 +3,61 @@ import {
   getHostProfile,
   listEventCheckpointsForEvent,
   listReviewsForEvent,
+  toggleSavedEvent as toggleSavedEventRemote,
 } from '@hausy/api';
-import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useAppStore } from '@/state/app-store';
 
 export type EventDetailTab = 'details' | 'organizer' | 'going';
 
 export function useEventDetail(id?: string) {
-  const event = useMemo(() => getEventById(id), [id]);
+  const eventQuery = useQuery({
+    queryKey: ['event', id],
+    queryFn: () => getEventById(id),
+    enabled: Boolean(id),
+  });
+  const queryClient = useQueryClient();
+  const event = eventQuery.data?.data ?? null;
   const hostQuery = useQuery({
-    queryKey: ['host', event.data?.organizer.id],
-    queryFn: () => getHostProfile(event.data?.organizer.id ?? ''),
-    enabled: Boolean(event.data),
+    queryKey: ['host', event?.organizer.id],
+    queryFn: () => getHostProfile(event?.organizer.id ?? ''),
+    enabled: Boolean(event),
   });
   const checkpointsQuery = useQuery({
-    queryKey: ['event-checkpoints', event.data?.id],
-    queryFn: () => listEventCheckpointsForEvent(event.data?.id ?? ''),
-    enabled: Boolean(event.data),
+    queryKey: ['event-checkpoints', event?.id],
+    queryFn: () => listEventCheckpointsForEvent(event?.id ?? ''),
+    enabled: Boolean(event),
   });
   const reviewsQuery = useQuery({
-    queryKey: ['reviews', event.data?.id],
-    queryFn: () => listReviewsForEvent(event.data?.id ?? ''),
-    enabled: Boolean(event.data),
+    queryKey: ['reviews', event?.id],
+    queryFn: () => listReviewsForEvent(event?.id ?? ''),
+    enabled: Boolean(event),
   });
   const followedHosts = useAppStore((state) => state.followedHosts);
   const followHost = useAppStore((state) => state.followHost);
-  const saved = useAppStore((state) => state.savedEventIds.includes(event.data?.id ?? ''));
+  const saved = useAppStore((state) => state.savedEventIds.includes(event?.id ?? ''));
   const toggleSavedEvent = useAppStore((state) => state.toggleSavedEvent);
+  const saveMutation = useMutation({
+    mutationFn: ({ eventId, saved: nextSaved }: { eventId: string; saved: boolean }) =>
+      toggleSavedEventRemote(eventId, nextSaved),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-events'] });
+    },
+  });
   const [tab, setTab] = useState<EventDetailTab>('details');
   const [joined, setJoined] = useState(false);
   return {
     checkpoints: checkpointsQuery.data?.data ?? [],
-    event: event.data,
-    eventError: event.error,
+    event,
+    eventError: eventQuery.data?.error ?? null,
     followHost: () => {
-      if (event.data) {
-        followHost(event.data.organizer.id);
+      if (event) {
+        followHost(event.organizer.id);
       }
     },
     host: hostQuery.data?.data ?? null,
-    hostFollowed: followedHosts.includes(event.data?.organizer.id ?? ''),
+    hostFollowed: followedHosts.includes(event?.organizer.id ?? ''),
     joined,
     reviews: reviewsQuery.data?.data ?? [],
     saved,
@@ -51,8 +65,9 @@ export function useEventDetail(id?: string) {
     setTab,
     tab,
     toggleSaved: () => {
-      if (event.data) {
-        toggleSavedEvent(event.data.id);
+      if (event) {
+        const nextSaved = toggleSavedEvent(event.id);
+        saveMutation.mutate({ eventId: event.id, saved: nextSaved });
       }
     },
   };

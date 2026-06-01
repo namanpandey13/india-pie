@@ -1,9 +1,15 @@
 import { listReviewsForEvent } from '@hausy/api';
+import { useQuery } from '@tanstack/react-query';
 
 export function useEventReviews(eventId: string) {
-  const result = listReviewsForEvent(eventId);
+  const result = useQuery({
+    queryKey: ['reviews', eventId],
+    queryFn: () => listReviewsForEvent(eventId),
+    enabled: Boolean(eventId),
+  });
+
   return {
-    error: result.error,
-    reviews: result.data ?? [],
+    error: result.data?.error ?? null,
+    reviews: result.data?.data ?? [],
   };
 }

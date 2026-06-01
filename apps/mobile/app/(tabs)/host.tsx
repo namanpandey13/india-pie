@@ -100,7 +100,7 @@ export default function HostScreen() {
           <OptionRow
             active={visibility === 'public'}
             title="Public"
-            body="Anyone in Delhi NCR can request to join."
+            body="Anyone in the launch region can request to join."
             onPress={() => setVisibility('public')}
           />
           <OptionRow

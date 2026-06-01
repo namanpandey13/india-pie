@@ -4,7 +4,7 @@ import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 
-import { GhostButton, PrimaryButton, typographyRoles, useThemeColors } from '@hausy/ui';
+import { PrimaryButton, typographyRoles, useThemeColors } from '@hausy/ui';
 import { signInWithGoogle } from '@/lib/auth';
 
 export default function LoginScreen() {
@@ -19,7 +19,9 @@ export default function LoginScreen() {
       return;
     }
 
-    router.replace('/home');
+    if (result.data) {
+      router.replace('/home');
+    }
   }
 
   return (
@@ -32,13 +34,13 @@ export default function LoginScreen() {
       <View style={[styles.overlay, { backgroundColor: colors.overlayStrong }]} />
       <SafeAreaView style={styles.safe}>
         <View style={styles.top}>
-          <Text style={[styles.logo, { color: colors.ink }]}>Hausy</Text>
-          <Text style={[styles.kicker, { color: colors.brand }]}>Delhi NCR</Text>
+          <Text style={[styles.logo, { color: colors.white }]}>Hausy</Text>
+          <Text style={[styles.kicker, { color: colors.white }]}>Launch region</Text>
         </View>
 
         <View style={styles.hero}>
-          <Text style={[styles.title, { color: colors.ink }]}>Offline plans, without stranger anxiety.</Text>
-          <Text style={[styles.subtitle, { color: colors.muted }]}>
+          <Text style={[styles.title, { color: colors.white }]}>Offline plans, without stranger anxiety.</Text>
+          <Text style={[styles.subtitle, { color: colors.white }]}>
             Activity-first events, host reputation, guest context, and pre-event chat inside the app.
           </Text>
         </View>
@@ -57,7 +59,6 @@ export default function LoginScreen() {
             onPress={handleGoogleSignIn}
           />
           {error ? <Text style={[styles.errorText, { color: colors.brand }]}>{error}</Text> : null}
-          <GhostButton label="Explore first" icon="sparkles-outline" onPress={() => router.replace('/home')} />
         </View>
       </SafeAreaView>
     </ImageBackground>

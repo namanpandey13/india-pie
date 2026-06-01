@@ -7,3 +7,4 @@ export * from './services/rsvp';
 export * from './services/saved';
 export * from './services/users';
 export * from './result';
+export * from './client';

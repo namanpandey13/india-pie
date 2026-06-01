@@ -12,6 +12,7 @@ export * from './primitives/pill';
 export * from './primitives/screen';
 export * from './primitives/typography';
 export * from './composites/action-bar';
+export * from './composites/editorial-event-feed';
 export * from './composites/event-card';
 export * from './composites/photo-hero';
 export * from './composites/trust';
