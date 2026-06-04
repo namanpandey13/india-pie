@@ -284,7 +284,11 @@ Suggested direction:
 - muted black
 - subtle beige/stone tones
 
-Accent colors should be semantic only.
+Brand accent:
+- Hausy Coral is the single primary brand accent.
+- Use it for primary CTAs, active navigation, key trust highlights, and small status signals.
+- Do not use rainbow accents, neon palettes, or multiple competing feature colors.
+- Secondary colors should remain neutral or semantic system states only.
 
 ---
 
@@ -328,17 +332,25 @@ Hosts should appear real and approachable.
 
 ---
 
-# 10. HOST-CENTRIC EXPERIENCE
+# 10. CREATOR-HOST EXPERIENCE
 
 Unlike Airbnb Experiences,
-Hausy highlights the HOST heavily.
+Hausy highlights the CREATOR heavily.
 
-Hosts are:
+Hausy Creators are real-life creator/operators for offline experiences.
+
+They are similar in importance to YouTube creators:
+- users follow them for taste, judgment, and community quality
+- their reputation compounds across plans
+- their profile is a trust anchor, not a listing footnote
+- their past events, reviews, and repeat attendees define credibility
+
+Creators are:
 - trust anchors
 - community builders
 - emotional tone setters
 
-Host sections should prominently show:
+Creator sections should prominently show:
 - profile
 - credibility
 - philosophy
@@ -346,6 +358,160 @@ Host sections should prominently show:
 - past events
 - reviews
 - recurring attendees
+
+Creator Studio should feel like a calm publishing flow:
+- create a plan
+- choose or propose a venue
+- prove venue/route/context
+- explain guest fit
+- submit for Hausy review
+- receive plan inbox updates
+
+Open self-publishing is not part of the launch MVP.
+
+## Creator Verification
+
+Creator verification is part of the creator profile workflow.
+
+Hausy does not treat creator applications as a separate public product object.
+The creator profile moves through:
+- Draft
+- In review
+- Approved
+- Paused
+- Rejected
+
+Verification documents are private.
+
+Rules:
+- document files live in private storage only
+- public creator profiles never expose document URLs
+- document metadata can show review state internally
+- document states are Uploaded, Approved, or Rejected
+- document review is implied while the creator profile is In review
+
+This keeps the public creator profile simple while preserving strong internal review.
+
+---
+
+# 10A. VENUE MODEL
+
+Venues are first-class trust entities.
+
+Events should reference a venue instead of storing venue text directly.
+
+Venue states:
+- Unverified — added from creator input or early sourcing
+- Verified — checked by Hausy or a trusted operator
+- Restricted — not available for new plans
+
+Venue UI should show:
+- name
+- locality
+- city
+- verified/restricted state when relevant
+- route or meeting-point proof when available
+
+Venue onboarding can scale later without changing event structure.
+
+---
+
+# 10B. EVENT LIFECYCLE
+
+Hausy does not use a generic “published” state.
+
+Event states are intentionally sequential:
+
+1. Draft — creator is editing privately.
+2. In review — submitted to Hausy for quality/safety review.
+3. Planning — visible for interest or early RSVP, but not guaranteed yet.
+4. Confirmed — creator has committed venue/time/plan; cancellation affects creator reliability.
+5. Cancelled — event will not happen.
+6. Completed — event happened and can receive attendance/reviews.
+
+Public discovery may show Planning and Confirmed events.
+
+Planning events should feel transparent:
+- users can express interest
+- users may request to join when enabled
+- Hausy does not imply the event is guaranteed
+
+Confirmed events should feel stronger:
+- creator has committed
+- venue/time/plan are verified enough to proceed
+- cancellation affects creator reliability
+
+Do not show raw confidence scores or hidden trust metrics in UI.
+Show clear lifecycle labels and verified readiness checkpoints instead.
+
+Readiness checkpoints may include:
+- venue verified
+- route proof added
+- guest list reviewed
+- creator confirmed
+
+Only positive verified checkpoints should be visible to users.
+
+---
+
+# 10C. RSVP, INTEREST & ATTENDANCE COMMITMENT
+
+Hausy separates interest from attendance commitment.
+
+Interest:
+- means “keep me updated”
+- does not reserve a spot
+- does not affect reliability if withdrawn
+
+RSVP request:
+- user asks to join
+- creator/Hausy can accept, decline, or waitlist
+
+Accepted:
+- user is allowed to attend
+- user still needs to confirm the attendance promise
+
+Confirmed:
+- user has promised to attend
+- no-show can affect user reliability
+
+Attendance outcomes:
+- Attended
+- No-show
+- Excused
+
+Future booking fees or deposits may reinforce commitment, but payments are not part of the launch MVP.
+
+---
+
+# 10D. SOCIAL PROFILES, FOLLOWS & CONNECTIONS
+
+Hausy profiles should feel like calm social portfolios, not settings pages.
+
+Every user profile can show:
+- public identity
+- bio and city
+- social links
+- interests
+- plans attended
+- reviews given and received
+- uploaded media
+- followers and following
+- connections
+
+Creator profiles extend user profiles with:
+- creator positioning
+- community tone
+- past plans
+- repeat attendee signal
+- creator reviews
+- current or upcoming plans
+
+Relationship model:
+- following a profile is lightweight social interest
+- following a creator is creator/community interest
+- connections are stronger friend-like relationships, usually mutual or post-event
+- blocked relationships prevent contact and discovery surfaces
 
 ---
 
@@ -391,8 +557,10 @@ MVP Navigation:
 - Home
 - Explore
 - Saved
-- Inbox
+- Plan Inbox
 - Profile
+
+Creator Studio lives inside Profile, not as a primary tab.
 
 Avoid:
 - excessive tabs

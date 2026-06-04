@@ -1,70 +1,147 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { Avatar, Card, colors, Header, Metric, Pill, Screen, SectionTitle, TopBar } from '@/components/mvp-kit';
-import { loginProfile } from '@/data/mvp';
+import {
+  Avatar,
+  Card,
+  GhostButton,
+  Header,
+  Metric,
+  Screen,
+  SectionTitle,
+  TopBar,
+  typographyRoles,
+  useThemeColors,
+} from '@hausy/ui';
+import { useProfile } from '@/features/profile/use-profile';
+import { useAppStore } from '@/state/app-store';
 
 export default function ProfileScreen() {
+  const loginProfile = useProfile();
+  const profile = loginProfile.data?.data;
+  const colors = useThemeColors();
+  const comfortSettings = useAppStore((state) => state.comfortSettings);
+  const colorScheme = useAppStore((state) => state.colorScheme);
+  const setColorScheme = useAppStore((state) => state.setColorScheme);
+  const setComfortSetting = useAppStore((state) => state.setComfortSetting);
+
   return (
     <Screen>
-      <TopBar />
+      <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
       <Header
         eyebrow="profile"
-        title="social proof before offline plans."
+        title="Social proof before offline plans."
         subtitle="Profiles behave like lightweight social portfolios, so guests and hosts can judge fit before showing up."
       />
 
       <Card style={styles.profileCard}>
         <View style={styles.profileTop}>
-          <Avatar label="NP" color={colors.lime} size={68} />
+          <Avatar label={profile?.initials ?? 'HS'} color="violet" size={68} />
           <View style={styles.profileCopy}>
-            <Text style={styles.name}>{loginProfile.name}</Text>
-            <Text style={styles.city}>{loginProfile.city}</Text>
+            <Text style={[styles.name, { color: colors.ink }]}>{profile?.name ?? 'Complete your Hausy profile'}</Text>
+            <Text style={[styles.city, { color: colors.muted }]}>{profile?.city ?? 'Google identity connected after sign-in'}</Text>
           </View>
         </View>
-        <Text style={styles.intent}>{loginProfile.intent}</Text>
-        <View style={styles.socialRow}>
-          <Pill label={loginProfile.instagram} active tone="coral" />
-          <Pill label="LinkedIn linked" active tone="blue" />
-        </View>
-      </Card>
-
-      <View style={styles.metricsRow}>
-        <Metric value="7" label="plans attended" />
-        <Metric value="4.8" label="guest rating" />
-        <Metric value="11" label="new links" />
-      </View>
-
-      <SectionTitle title="trust graph" action="mock" />
-      <Card style={styles.graphCard}>
-        <View style={styles.graphRow}>
-          <Avatar label="NP" color={colors.lime} size={48} />
-          <View style={styles.graphLine} />
-          <Avatar label="RM" color={colors.coral} size={44} />
-          <View style={styles.graphLine} />
-          <Avatar label="TS" color={colors.yellow} size={44} />
-        </View>
-        <Text style={styles.graphText}>
-          Based on plans attended, mutuals, host reviews, and recurring small-group chats.
+        <Text style={[styles.intent, { color: colors.ink }]}>
+          Add social proof, creator interests, and comfort settings before requesting offline plans.
         </Text>
       </Card>
 
-      <SectionTitle title="comfort settings" />
+      <View style={styles.metricsRow}>
+        <Metric value="0" label="Plans attended" />
+        <Metric value="0" label="Saved plans" />
+        <Metric value="0" label="RSVPs" />
+      </View>
+
+      <SectionTitle title="Comfort settings" />
       <Card style={styles.settingsCard}>
-        <Setting icon="people-outline" label="Prefer curated guest lists" />
-        <Setting icon="shield-checkmark-outline" label="Show confirmed attendees before RSVP" />
-        <Setting icon="chatbubble-ellipses-outline" label="Keep event comms inside Hausy" />
+        <SettingSwitch
+          active={colorScheme === 'light'}
+          icon="contrast-outline"
+          label="Light appearance"
+          onValueChange={(active) => setColorScheme(active ? 'light' : 'dark')}
+        />
+        <Setting
+          active={comfortSettings.curatedGuestLists}
+          icon="people-outline"
+          label="Prefer curated guest lists"
+          onPress={() => setComfortSetting('curatedGuestLists', !comfortSettings.curatedGuestLists)}
+        />
+        <Setting
+          active={comfortSettings.confirmedAttendees}
+          icon="shield-checkmark-outline"
+          label="Show confirmed attendees before RSVP"
+          onPress={() => setComfortSetting('confirmedAttendees', !comfortSettings.confirmedAttendees)}
+        />
+        <Setting
+          active={comfortSettings.inAppComms}
+          icon="chatbubble-ellipses-outline"
+          label="Keep event comms inside Hausy"
+          onPress={() => setComfortSetting('inAppComms', !comfortSettings.inAppComms)}
+        />
+      </Card>
+
+      <SectionTitle title="Creator Studio" action="Submit for review" />
+      <Card style={styles.settingsCard}>
+        <Text style={[styles.hostCopy, { color: colors.muted }]}>
+          Apply as a Hausy Creator and submit offline plans for review before they go live.
+        </Text>
+        <GhostButton
+          label="Open Creator Studio"
+          icon="create-outline"
+          onPress={() => router.push('/host')}
+        />
       </Card>
     </Screen>
   );
 }
 
-function Setting({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+function Setting({
+  active,
+  icon,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+}) {
+  const colors = useThemeColors();
+
+  return (
+    <Pressable style={styles.setting} onPress={onPress}>
+      <Ionicons name={icon} size={19} color={colors.brand} />
+      <Text style={[styles.settingText, { color: colors.ink }]}>{label}</Text>
+      <Ionicons name={active ? 'checkmark-circle' : 'ellipse-outline'} size={18} color={active ? colors.brand : colors.faint} />
+    </Pressable>
+  );
+}
+
+function SettingSwitch({
+  active,
+  icon,
+  label,
+  onValueChange,
+}: {
+  active: boolean;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onValueChange: (active: boolean) => void;
+}) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.setting}>
-      <Ionicons name={icon} size={19} color={colors.lime} />
-      <Text style={styles.settingText}>{label}</Text>
-      <Ionicons name="checkmark" size={18} color={colors.lime} />
+      <Ionicons name={icon} size={19} color={colors.brand} />
+      <Text style={[styles.settingText, { color: colors.ink }]}>{label}</Text>
+      <Switch
+        value={active}
+        onValueChange={onValueChange}
+        trackColor={{ false: colors.surfaceLift, true: colors.brandMuted }}
+        thumbColor={active ? colors.brand : colors.faint}
+      />
     </View>
   );
 }
@@ -83,49 +160,17 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   name: {
-    color: colors.ink,
-    fontSize: 22,
-    fontWeight: '900',
+    ...typographyRoles.h2,
   },
   city: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: '800',
+    ...typographyRoles.caption,
   },
   intent: {
-    color: colors.ink,
-    fontSize: 15,
-    fontWeight: '800',
-    lineHeight: 22,
-  },
-  socialRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+    ...typographyRoles.bodyStrong,
   },
   metricsRow: {
     flexDirection: 'row',
     gap: 10,
-  },
-  graphCard: {
-    gap: 16,
-  },
-  graphRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  graphLine: {
-    backgroundColor: colors.line,
-    height: 2,
-    width: 42,
-  },
-  graphText: {
-    color: colors.muted,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 20,
-    textAlign: 'center',
   },
   settingsCard: {
     gap: 12,
@@ -136,9 +181,10 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   settingText: {
-    color: colors.ink,
     flex: 1,
-    fontSize: 14,
-    fontWeight: '800',
+    ...typographyRoles.label,
+  },
+  hostCopy: {
+    ...typographyRoles.body,
   },
 });

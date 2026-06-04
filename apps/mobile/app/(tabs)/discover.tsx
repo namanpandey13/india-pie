@@ -1,69 +1,57 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   Card,
-  colors,
   EventCard,
-  Metric,
   Pill,
   Screen,
   SectionTitle,
   TopBar,
-} from '@/components/mvp-kit';
-import { city, events, tags } from '@/data/mvp';
+  typographyRoles,
+  useThemeColors,
+} from '@hausy/ui';
+import { useDiscoverEvents } from '@/features/events/use-discover-events';
 
 export default function DiscoverScreen() {
-  const [activeTag, setActiveTag] = useState('all');
-  const [saved, setSaved] = useState<string[]>(['lodhi-photo-walk']);
-  const [joined] = useState<string[]>(['hk-boardgames']);
-
-  const visibleEvents =
-    activeTag === 'all' ? events : events.filter((event) => event.tags.includes(activeTag));
-
-  function toggleSaved(id: string) {
-    setSaved((current) =>
-      current.includes(id) ? current.filter((eventId) => eventId !== id) : [...current, id],
-    );
-  }
+  const colors = useThemeColors();
+  const {
+    activeTag,
+    city,
+    error,
+    eventTags,
+    isLoading,
+    joined,
+    query,
+    saved,
+    setActiveTag,
+    setQuery,
+    toggleSaved,
+    visibleEvents,
+  } = useDiscoverEvents();
 
   return (
     <Screen>
-      <TopBar />
-
-      <View style={styles.feedToggle}>
-        <Text style={styles.toggleActive}>all</Text>
-        <Text style={styles.toggleMuted}>friends</Text>
-      </View>
-
-      <Card style={styles.activityCard}>
-        <View style={styles.activityAccent} />
-        <View style={styles.activityCopy}>
-          <Text style={styles.activityTitle}>Riya is going to Board Game Baithak</Text>
-          <Text style={styles.activityMeta}>2m - Hauz Khas - host-approved crowd</Text>
-        </View>
-      </Card>
+      <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
 
       <View style={styles.controls}>
-        <Pressable style={styles.searchCircle}>
-          <Ionicons name="search-outline" size={18} color={colors.ink} />
-        </Pressable>
-        <View style={styles.cityPill}>
-          <Ionicons name="location-outline" size={16} color={colors.lime} />
-          <Text style={styles.cityText}>{city}</Text>
+        <View style={[styles.cityPill, { backgroundColor: colors.surface, borderColor: colors.line }]}>
+          <Ionicons name="location-outline" size={16} color={colors.brand} />
+          <Text style={[styles.cityText, { color: colors.ink }]}>{city}</Text>
         </View>
-        <Pressable style={styles.mapButton}>
-          <Text style={styles.mapText}>map</Text>
-        </Pressable>
-        <Pressable style={styles.searchCircle}>
-          <Ionicons name="options-outline" size={18} color={colors.ink} />
-        </Pressable>
       </View>
 
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search by plan, host, venue, or locality"
+        placeholderTextColor={colors.faint}
+        style={[styles.searchInput, { backgroundColor: colors.surface, borderColor: colors.line, color: colors.ink }]}
+      />
+
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillRow}>
-        {tags.map((tag) => (
+        {eventTags.map((tag) => (
           <Pill
             key={tag}
             label={tag}
@@ -74,15 +62,21 @@ export default function DiscoverScreen() {
         ))}
       </ScrollView>
 
-      <View style={styles.metricsRow}>
-        <Metric value="27" label="Delhi plans this week" />
-        <Metric value="92%" label="top confidence score" />
-        <Metric value="0" label="WhatsApp groups" />
-      </View>
-
-      <SectionTitle title="find things to do" action={`${visibleEvents.length} plans`} />
+      <SectionTitle title="Find things to do" action={`${visibleEvents.length} plans`} />
 
       <View style={styles.feed}>
+        {isLoading ? (
+          <Card style={styles.emptyCard}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Loading plans.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>Checking creator-led events in {city}.</Text>
+          </Card>
+        ) : null}
+        {error ? (
+          <Card style={styles.emptyCard}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Explore is unavailable.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>{error.message}</Text>
+          </Card>
+        ) : null}
         {visibleEvents.map((event) => (
           <EventCard
             key={event.id}
@@ -93,73 +87,25 @@ export default function DiscoverScreen() {
             onSave={() => toggleSaved(event.id)}
           />
         ))}
+        {!isLoading && !error && visibleEvents.length === 0 ? (
+          <Card style={styles.emptyCard}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>No creator-led plans yet.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>Planning and confirmed Hausy Creator events will appear here once Supabase data is connected.</Text>
+          </Card>
+        ) : null}
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  feedToggle: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 18,
-    justifyContent: 'center',
-  },
-  toggleActive: {
-    color: colors.ink,
-    fontSize: 13,
-    fontWeight: '900',
-  },
-  toggleMuted: {
-    color: colors.faint,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  activityCard: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-    padding: 12,
-  },
-  activityAccent: {
-    backgroundColor: colors.lime,
-    borderRadius: 8,
-    height: 52,
-    width: 6,
-  },
-  activityCopy: {
-    flex: 1,
-    gap: 4,
-  },
-  activityTitle: {
-    color: colors.ink,
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  activityMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   controls: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
   },
-  searchCircle: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.line,
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-  },
   cityPill: {
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.line,
     borderRadius: 999,
     borderWidth: 1,
     flex: 1,
@@ -170,32 +116,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   cityText: {
-    color: colors.ink,
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  mapButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLift,
-    borderRadius: 999,
-    height: 40,
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  mapText: {
-    color: colors.ink,
-    fontSize: 13,
-    fontWeight: '900',
+    ...typographyRoles.label,
   },
   pillRow: {
     gap: 10,
     paddingRight: 18,
   },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: 10,
+  searchInput: {
+    borderRadius: 18,
+    borderWidth: 1,
+    ...typographyRoles.bodyStrong,
+    minHeight: 48,
+    paddingHorizontal: 14,
   },
   feed: {
     gap: 18,
+  },
+  emptyCard: {
+    gap: 6,
+  },
+  emptyTitle: {
+    ...typographyRoles.h3,
+  },
+  emptyBody: {
+    ...typographyRoles.body,
   },
 });

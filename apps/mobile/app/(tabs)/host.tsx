@@ -1,10 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { router } from 'expo-router';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   Card,
-  colors,
   GhostButton,
   Header,
   Pill,
@@ -12,29 +11,42 @@ import {
   Screen,
   SectionTitle,
   TopBar,
-} from '@/components/mvp-kit';
-
-const templates = ['game night', 'photo walk', 'builders dinner', 'listening party'];
+  typographyRoles,
+  useThemeColors,
+} from '@hausy/ui';
+import { useHostDraft } from '@/features/host/use-host-draft';
 
 export default function HostScreen() {
-  const [template, setTemplate] = useState(templates[0]);
-  const [visibility, setVisibility] = useState<'public' | 'curated' | 'private'>('curated');
-  const [title, setTitle] = useState('Khan Market coffee table for new operators');
-  const [capacity, setCapacity] = useState('14');
+  const colors = useThemeColors();
+  const {
+    capacity,
+    draft,
+    hostDraft,
+    saveHostDraft,
+    setCapacity,
+    setTemplate,
+    setTitle,
+    setVisibility,
+    submitHostDraftForReview,
+    template,
+    templates,
+    title,
+    visibility,
+  } = useHostDraft();
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.select({ ios: 'padding', default: undefined })}
-      style={styles.flex}>
+      style={[styles.flex, { backgroundColor: colors.bg }]}>
       <Screen>
-        <TopBar />
+        <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
         <Header
-          eyebrow="creator mode"
-          title="host like a creator, not a random listing."
-          subtitle="The aligned wedge: host reputation, guest selection, clear follow-through, and chat inside the product."
+          eyebrow="creator studio"
+          title="Create offline plans like a trusted creator."
+          subtitle="Submit a plan with venue proof, guest fit, and creator accountability. Hausy reviews plans before they enter planning."
         />
 
-        <SectionTitle title="start with a format" />
+        <SectionTitle title="Start with a format" />
         <View style={styles.templateGrid}>
           {templates.map((item) => (
             <Pill
@@ -48,81 +60,95 @@ export default function HostScreen() {
         </View>
 
         <Card style={styles.formCard}>
-          <Text style={styles.label}>plan title</Text>
+          <Text style={[styles.label, { color: colors.faint }]}>Plan title</Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
             placeholder="Name your plan"
             placeholderTextColor={colors.faint}
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
           />
 
-          <Text style={styles.label}>where</Text>
-          <View style={styles.inputRow}>
-            <Ionicons name="location-outline" size={20} color={colors.lime} />
-            <Text style={styles.inputStatic}>Khan Market, Hauz Khas, Cyber Hub</Text>
+          <Text style={[styles.label, { color: colors.faint }]}>Where</Text>
+          <View style={[styles.inputRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
+            <Ionicons name="location-outline" size={20} color={colors.brand} />
+            <Text style={[styles.inputStatic, { color: colors.ink }]}>Choose or propose a venue</Text>
           </View>
 
           <View style={styles.twoCol}>
             <View style={styles.fieldHalf}>
-              <Text style={styles.label}>when</Text>
-              <View style={styles.inputRow}>
-                <Ionicons name="time-outline" size={18} color={colors.lime} />
-                <Text style={styles.inputStatic}>Thu, 7 PM</Text>
+              <Text style={[styles.label, { color: colors.faint }]}>When</Text>
+              <View style={[styles.inputRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
+                <Ionicons name="time-outline" size={18} color={colors.brand} />
+                <Text style={[styles.inputStatic, { color: colors.ink }]}>Add event session</Text>
               </View>
             </View>
             <View style={styles.fieldHalf}>
-              <Text style={styles.label}>capacity</Text>
+              <Text style={[styles.label, { color: colors.faint }]}>Capacity</Text>
               <TextInput
                 keyboardType="number-pad"
                 value={capacity}
                 onChangeText={setCapacity}
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
               />
             </View>
           </View>
         </Card>
 
-        <SectionTitle title="guest list control" action="trust layer" />
+        <SectionTitle title="Guest list control" action="Trust layer" />
         <Card style={styles.visibilityCard}>
           <OptionRow
             active={visibility === 'public'}
-            title="public"
-            body="Anyone in Delhi NCR can request to join."
+            title="Public"
+            body="Anyone in the launch region can request to join."
             onPress={() => setVisibility('public')}
           />
           <OptionRow
             active={visibility === 'curated'}
-            title="curated"
+            title="Curated"
             body="You approve guests by LinkedIn, Instagram, age range, vibe, and mutual context."
             onPress={() => setVisibility('curated')}
           />
           <OptionRow
             active={visibility === 'private'}
-            title="private"
+            title="Private"
             body="Only people with the invite link can see the plan."
             onPress={() => setVisibility('private')}
           />
         </Card>
 
-        <SectionTitle title="host follow-through" action="no dead events" />
+        <SectionTitle title="Creator follow-through" action="Review required" />
         <Card style={styles.promptCard}>
-          <Checklist label="Confirm venue before publishing" done />
-          <Checklist label="Send route or table proof 3 hours before" done />
-          <Checklist label="Open pre-event chat with prompts" done />
-          <Checklist label="Post-event host review affects creator rank" done />
+          <Checklist label="Confirm venue before review" done />
+          <Checklist label="Share route or table proof before event" done />
+          <Checklist label="Keep plan updates inside Hausy Plan Inbox" done />
+          <Checklist label="Post-event reviews affect creator rank" done />
         </Card>
 
-        <SectionTitle title="guest fit questions" action="pre-chat seed" />
+        <SectionTitle title="Guest fit questions" action="Pre-chat seed" />
         <Card style={styles.promptCard}>
-          <Text style={styles.prompt}>- What brings you to this plan?</Text>
-          <Text style={styles.prompt}>- Are you coming solo or with a friend?</Text>
-          <Text style={styles.prompt}>- What would make this feel worth leaving home for?</Text>
-          <GhostButton label="edit prompts" icon="pencil-outline" />
+          <Text style={[styles.prompt, { color: colors.muted }]}>What brings you to this plan?</Text>
+          <Text style={[styles.prompt, { color: colors.muted }]}>Are you coming solo or with a friend?</Text>
+          <Text style={[styles.prompt, { color: colors.muted }]}>What would make this feel worth leaving home for?</Text>
+          <GhostButton label="Edit prompts" icon="pencil-outline" onPress={saveHostDraft} />
         </Card>
 
-        <PrimaryButton label="Save draft" icon="document-text-outline" tone="blue" />
-        <PrimaryButton label="Preview and publish" icon="send-outline" />
+        {hostDraft.lastSavedAt ? <Text style={[styles.savedStatus, { color: colors.brand }]}>{hostDraft.lastSavedAt}</Text> : null}
+        {hostDraft.submittedForReview ? (
+          <Card style={styles.previewCard}>
+            <Text style={[styles.previewTitle, { color: colors.ink }]}>{title}</Text>
+            <Text style={[styles.previewBody, { color: colors.muted }]}>
+              {template} - {visibility} - {capacity} guests. The plan is in review before it can move to planning.
+            </Text>
+          </Card>
+        ) : null}
+        <PrimaryButton
+          label={`Save ${draft?.status ?? 'draft'}`}
+          icon="document-text-outline"
+          tone="blue"
+          onPress={saveHostDraft}
+        />
+        <PrimaryButton label="Submit for review" icon="send-outline" onPress={submitHostDraftForReview} />
       </Screen>
     </KeyboardAvoidingView>
   );
@@ -139,26 +165,36 @@ function OptionRow({
   body: string;
   onPress: () => void;
 }) {
+  const colors = useThemeColors();
+
   return (
-    <Pressable style={[styles.option, active && styles.optionActive]} onPress={onPress}>
+    <Pressable
+      style={[
+        styles.option,
+        { borderColor: colors.line },
+        active && { backgroundColor: colors.surfaceAlt, borderColor: colors.brand },
+      ]}
+      onPress={onPress}>
       <Ionicons
         name={active ? 'radio-button-on' : 'radio-button-off'}
         size={22}
-        color={active ? colors.lime : colors.muted}
+        color={active ? colors.brand : colors.muted}
       />
       <View style={styles.optionCopy}>
-        <Text style={styles.optionTitle}>{title}</Text>
-        <Text style={styles.optionBody}>{body}</Text>
+        <Text style={[styles.optionTitle, { color: colors.ink }]}>{title}</Text>
+        <Text style={[styles.optionBody, { color: colors.muted }]}>{body}</Text>
       </View>
     </Pressable>
   );
 }
 
 function Checklist({ label, done }: { label: string; done?: boolean }) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.checkRow}>
-      <Ionicons name={done ? 'checkmark-circle' : 'ellipse-outline'} size={19} color={colors.lime} />
-      <Text style={styles.checkText}>{label}</Text>
+      <Ionicons name={done ? 'checkmark-circle' : 'ellipse-outline'} size={19} color={colors.brand} />
+      <Text style={[styles.checkText, { color: colors.ink }]}>{label}</Text>
     </View>
   );
 }
@@ -166,7 +202,6 @@ function Checklist({ label, done }: { label: string; done?: boolean }) {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: colors.bg,
   },
   templateGrid: {
     flexDirection: 'row',
@@ -177,26 +212,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   label: {
-    color: colors.faint,
-    fontSize: 12,
-    fontWeight: '900',
-    textTransform: 'uppercase',
+    ...typographyRoles.caption,
   },
   input: {
-    backgroundColor: colors.surfaceAlt,
-    borderColor: colors.line,
     borderRadius: 14,
     borderWidth: 1,
-    color: colors.ink,
-    fontSize: 16,
-    fontWeight: '800',
+    ...typographyRoles.bodyStrong,
     minHeight: 48,
     paddingHorizontal: 12,
   },
   inputRow: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
-    borderColor: colors.line,
     borderRadius: 14,
     borderWidth: 1,
     flexDirection: 'row',
@@ -205,10 +231,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   inputStatic: {
-    color: colors.ink,
     flex: 1,
-    fontSize: 14,
-    fontWeight: '800',
+    ...typographyRoles.bodyStrong,
   },
   twoCol: {
     flexDirection: 'row',
@@ -223,7 +247,6 @@ const styles = StyleSheet.create({
   },
   option: {
     alignItems: 'center',
-    borderColor: colors.line,
     borderRadius: 16,
     borderWidth: 1,
     flexDirection: 'row',
@@ -231,30 +254,22 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   optionActive: {
-    backgroundColor: colors.surfaceAlt,
-    borderColor: colors.lime,
   },
   optionCopy: {
     flex: 1,
     gap: 2,
   },
   optionTitle: {
-    color: colors.ink,
-    fontSize: 15,
-    fontWeight: '900',
+    ...typographyRoles.label,
   },
   optionBody: {
-    color: colors.muted,
-    fontSize: 13,
-    lineHeight: 18,
+    ...typographyRoles.caption,
   },
   promptCard: {
     gap: 10,
   },
   prompt: {
-    color: colors.muted,
-    fontSize: 14,
-    lineHeight: 20,
+    ...typographyRoles.body,
   },
   checkRow: {
     alignItems: 'center',
@@ -262,10 +277,20 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   checkText: {
-    color: colors.ink,
     flex: 1,
-    fontSize: 14,
-    fontWeight: '800',
-    lineHeight: 20,
+    ...typographyRoles.bodyStrong,
+  },
+  savedStatus: {
+    ...typographyRoles.caption,
+    textAlign: 'center',
+  },
+  previewCard: {
+    gap: 8,
+  },
+  previewTitle: {
+    ...typographyRoles.h3,
+  },
+  previewBody: {
+    ...typographyRoles.body,
   },
 });

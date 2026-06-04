@@ -161,6 +161,7 @@ Model relationships carefully.
 Primary entities:
 - users
 - hosts
+- venues
 - events
 - RSVPs
 - communities
@@ -171,6 +172,13 @@ Design for:
 - trust systems
 - relationship graphs
 - future recommendations
+
+Schema rules:
+- Use enums for all lifecycle and review states.
+- Avoid duplicate states; event visibility comes from `planning` and `confirmed`, not `published`.
+- Keep creator onboarding on the `creators` row; do not add a separate application table for launch.
+- Store creator verification files in private storage and keep only metadata in database rows.
+- Make venues first-class records and reference them from events.
 
 ---
 

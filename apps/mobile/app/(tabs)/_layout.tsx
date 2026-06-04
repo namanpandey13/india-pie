@@ -1,55 +1,103 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { colors } from '@/components/mvp-kit';
+import { componentTokens, typographyRoles, useThemeColors } from '@hausy/ui';
+import { useAuthSession } from '@/lib/auth-session';
 
 export default function TabLayout() {
+  const colors = useThemeColors();
+  const { isLoading, isSignedIn } = useAuthSession();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.lime,
+        tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '800',
+          ...typographyRoles.micro,
         },
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.line,
-          height: 82,
-          paddingTop: 8,
+          height: 78,
+          paddingBottom: 8,
+          paddingTop: 6,
         },
+        tabBarItemStyle: {
+          minHeight: 56,
+          paddingVertical: 4,
+        },
+        tabBarHideOnKeyboard: true,
         headerShown: false,
-        tabBarButton: HapticTab,
       }}>
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'home' : 'home-outline'} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="discover"
         options={{
           title: 'Discover',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="sparkles-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'compass' : 'compass-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="host"
         options={{
-          title: 'Host',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="add-circle-outline" color={color} />,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="saved"
+        options={{
+          title: 'Saved',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'bookmark' : 'bookmark-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="chatbubbles-outline" color={color} />,
+          title: 'Chats',
+          tabBarBadge: '',
+          tabBarBadgeStyle: {
+            backgroundColor: colors.brand,
+            borderRadius: 4,
+            height: 8,
+            minWidth: 8,
+            right: 23,
+            top: 8,
+            width: 8,
+          },
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'chatbubble' : 'chatbubble-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="person-circle-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'person' : 'person-outline'} color={color} />
+          ),
         }}
       />
     </Tabs>
