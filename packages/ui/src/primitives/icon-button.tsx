@@ -8,17 +8,19 @@ export function IconButton({
   onPress,
   indicator,
   style,
+  color,
 }: {
   icon: IconName;
   onPress?: () => void;
   indicator?: boolean;
   style?: StyleProp<ViewStyle>;
+  color?: string;
 }) {
   const colors = useThemeColors();
 
   return (
     <Pressable onPress={onPress} style={[styles.iconButton, { backgroundColor: colors.surface, borderColor: colors.line }, style]}>
-      <Ionicons name={icon} size={18} color={colors.ink} />
+      <Ionicons name={icon} size={18} color={color ?? colors.ink} />
       {indicator ? <View style={[styles.dot, { backgroundColor: colors.brand }]} /> : null}
     </Pressable>
   );

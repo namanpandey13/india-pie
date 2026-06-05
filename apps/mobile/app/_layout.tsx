@@ -69,7 +69,8 @@ export default function RootLayout() {
                 name="event/[id]"
                 options={{ headerShown: false, presentation: 'modal' }}
               />
-              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+              <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ headerShown: false, presentation: 'modal' }} />
             </Stack>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           </ThemeProvider>

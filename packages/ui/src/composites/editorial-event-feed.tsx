@@ -248,7 +248,7 @@ function AvatarStack({ event, light }: { event: Event; light?: boolean }) {
     <View style={styles.avatarStack}>
       {event.attendees.slice(0, 3).map((attendee, index) => (
         <View
-          key={attendee.id}
+          key={`${attendee.id}-${index}`}
           style={[
             styles.stackedAvatar,
             {

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { eventStatusLabel, type Event, type EventCheckpoint, type HostProfile, type Review } from '@hausy/types';
 import {
   ActionBar,
@@ -21,10 +21,13 @@ import type { RsvpDraft } from '@/state/app-store';
 export function EventIntro({ event }: { event: Event }) {
   return (
     <View style={styles.section}>
-      <View style={styles.badges}>
-        <Badge label={eventStatusLabel[event.status]} active={event.status === 'confirmed'} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badges}>
+        <Badge
+          label={eventStatusLabel[event.status]}
+          status={event.status === 'cancelled' ? 'cancelled' : event.status === 'confirmed' ? 'confirmed' : 'planning'}
+        />
         <Badge label={event.priceLabel} />
-      </View>
+      </ScrollView>
       <Typography variant="h1">{event.title}</Typography>
       <Typography muted>
         {event.vibe}
@@ -37,15 +40,22 @@ export function HostTrustPanel({
   followed,
   host,
   onFollow,
+  onOpenProfile,
 }: {
   followed: boolean;
   host: HostProfile;
   onFollow: () => void;
+  onOpenProfile?: () => void;
 }) {
   return (
     <View style={styles.section}>
       <SectionTitle title="Host" action="Trust anchor" />
       <HostSummary host={host} />
+      <GhostButton
+        label="View profile"
+        icon="person-circle-outline"
+        onPress={onOpenProfile}
+      />
       <GhostButton
         label={followed ? 'Following host' : 'Follow host'}
         icon={followed ? 'checkmark-circle-outline' : 'person-add-outline'}
@@ -69,7 +79,7 @@ export function SocialTrustPanel({
       <SectionTitle title="Plan readiness" action={eventStatusLabel[event.status]} />
       <Card style={styles.stackCard}>
         {verifiedCheckpoints.length > 0 ? (
-          verifiedCheckpoints.map((checkpoint) => <TrustSignal key={checkpoint.id} label={checkpoint.label} />)
+          verifiedCheckpoints.map((checkpoint, index) => <TrustSignal key={`${checkpoint.id}-${index}`} label={checkpoint.label} />)
         ) : (
           <Typography muted>Readiness checks appear after the creator verifies venue, route, and guest-list steps.</Typography>
         )}
@@ -86,8 +96,8 @@ export function WhatYouDoPanel({ event }: { event: Event }) {
       <SectionTitle title="What you'll do" />
       <Card style={styles.stackCard}>
         <Typography muted>{event.about}</Typography>
-        {event.prompts.map((prompt) => (
-          <View key={prompt} style={styles.promptRow}>
+        {event.prompts.map((prompt, index) => (
+          <View key={`${prompt}-${index}`} style={styles.promptRow}>
             <Ionicons name="sparkles-outline" size={17} color={colors.brand} />
             <Typography style={styles.promptText}>{prompt}</Typography>
           </View>
@@ -97,7 +107,7 @@ export function WhatYouDoPanel({ event }: { event: Event }) {
   );
 }
 
-export function AttendeePreview({ event }: { event: Event }) {
+export function AttendeePreview({ event, onOpenProfile }: { event: Event; onOpenProfile?: (id: string) => void }) {
   const colors = useThemeColors();
 
   return (
@@ -105,8 +115,8 @@ export function AttendeePreview({ event }: { event: Event }) {
       <SectionTitle title="Attendee vibe" action={`${event.attendees.length} previewed`} />
       <Card style={styles.stackCard}>
         <Typography muted>{event.friendContext}</Typography>
-        {event.attendees.map((attendee) => (
-          <View key={attendee.id} style={styles.attendeeRow}>
+        {event.attendees.map((attendee, index) => (
+          <Pressable key={`${attendee.id}-${index}`} onPress={() => onOpenProfile?.(attendee.id)} style={styles.attendeeRow}>
             <Avatar label={attendee.initials} color={attendee.color} size={42} />
             <View style={styles.attendeeCopy}>
               <Typography variant="caption">{attendee.name}</Typography>
@@ -118,7 +128,7 @@ export function AttendeePreview({ event }: { event: Event }) {
               </Typography>
             </View>
             <Text style={[styles.status, { color: colors.faint }]}>{attendee.status}</Text>
-          </View>
+          </Pressable>
         ))}
       </Card>
     </View>
@@ -179,10 +189,10 @@ export function RsvpActionPanel({
           Requesting is not an attendance promise. If accepted, confirm only when you can show up.
         </Typography>
 
-        <View style={styles.dateRow}>
-          {[`${event.dateLabel}, ${event.timeLabel}`, 'Next similar plan'].map((date) => (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateRow}>
+          {[`${event.dateLabel}, ${event.timeLabel}`, 'Next similar plan'].map((date, index) => (
             <Pressable
-              key={date}
+              key={`${date}-${index}`}
               onPress={() => onUpdateDraft({ selectedDate: date })}
               style={[
                 styles.datePill,
@@ -198,7 +208,7 @@ export function RsvpActionPanel({
               </Text>
             </Pressable>
           ))}
-        </View>
+        </ScrollView>
 
         <TextInput
           value={note}
@@ -246,8 +256,8 @@ const styles = StyleSheet.create({
   },
   badges: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
+    paddingRight: 18,
   },
   stackCard: {
     gap: 12,
@@ -280,8 +290,8 @@ const styles = StyleSheet.create({
   },
   dateRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 10,
+    paddingRight: 18,
   },
   datePill: {
     borderRadius: 999,

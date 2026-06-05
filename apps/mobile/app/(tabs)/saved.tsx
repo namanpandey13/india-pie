@@ -16,7 +16,7 @@ import { useSavedEvents } from '@/features/saved/use-saved-events';
 
 export default function SavedScreen() {
   const colors = useThemeColors();
-  const { savedEvents, toggleSaved } = useSavedEvents();
+  const { error, isLoading, savedEvents, toggleSaved } = useSavedEvents();
 
   return (
     <Screen>
@@ -29,6 +29,20 @@ export default function SavedScreen() {
 
       <SectionTitle title="Saved plans" action={`${savedEvents.length} plans`} />
       <View style={styles.feed}>
+        {isLoading ? (
+          <Card style={styles.emptyCard}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Loading saved plans.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>Checking your local saves and Supabase records.</Text>
+          </Card>
+        ) : null}
+
+        {error && savedEvents.length === 0 ? (
+          <Card style={styles.emptyCard}>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Saved plans could not sync.</Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>{error.message}</Text>
+          </Card>
+        ) : null}
+
         {savedEvents.map((event) => (
           <EventCard
             key={event.id}
@@ -38,7 +52,7 @@ export default function SavedScreen() {
             onSave={() => toggleSaved(event.id)}
           />
         ))}
-        {savedEvents.length === 0 ? (
+        {!isLoading && !error && savedEvents.length === 0 ? (
           <Card style={styles.emptyCard}>
             <Text style={[styles.emptyTitle, { color: colors.ink }]}>No saved plans yet.</Text>
             <Text style={[styles.emptyBody, { color: colors.muted }]}>Save one from Explore when the host, room, and timing feel right.</Text>

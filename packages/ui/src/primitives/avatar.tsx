@@ -2,14 +2,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import {
   componentTokens,
   typographyRoles,
-  useSemanticAccents,
   useThemeColors,
   type AccentTone,
 } from '../styles/theme';
 
 export function Avatar({
   label,
-  color = 'lime',
   size = 42,
 }: {
   label: string;
@@ -17,8 +15,7 @@ export function Avatar({
   size?: number;
 }) {
   const colors = useThemeColors();
-  const semanticAccents = useSemanticAccents();
-  const backgroundColor = color in semanticAccents ? semanticAccents[color as AccentTone] : color;
+  const backgroundColor = colors.white;
 
   return (
     <View
@@ -29,7 +26,7 @@ export function Avatar({
           height: size,
           borderRadius: size / 2,
           backgroundColor,
-          borderColor: colors.bg,
+          borderColor: colors.white,
         },
       ]}>
       <Text

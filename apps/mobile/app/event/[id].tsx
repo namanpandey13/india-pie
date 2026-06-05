@@ -75,10 +75,20 @@ function ProtectedEventDetailScreen() {
 
         <View style={styles.body}>
           <EventIntro event={event} />
-          {host ? <HostTrustPanel host={host} followed={hostFollowed} onFollow={followHost} /> : null}
+          {host ? (
+            <HostTrustPanel
+              host={host}
+              followed={hostFollowed}
+              onFollow={followHost}
+              onOpenProfile={() => router.push({ pathname: '/profile/[id]', params: { id: host.id } })}
+            />
+          ) : null}
           <SocialTrustPanel event={event} checkpoints={checkpoints} />
           <WhatYouDoPanel event={event} />
-          <AttendeePreview event={event} />
+          <AttendeePreview
+            event={event}
+            onOpenProfile={(profileId) => router.push({ pathname: '/profile/[id]', params: { id: profileId } })}
+          />
           <ReviewsPreview reviews={reviews} />
           <LogisticsPanel event={event} />
           <RsvpActionPanel

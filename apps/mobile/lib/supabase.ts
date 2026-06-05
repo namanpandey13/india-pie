@@ -15,7 +15,10 @@ export const hasSupabaseConfig =
   hasUsableSupabaseValue(supabaseUrl, 'https://your-project-ref.supabase.co') &&
   hasUsableSupabaseValue(supabasePublishableKey, 'sb_publishable_your_key_here');
 
+const isStaticWebRender = Platform.OS === 'web' && typeof window === 'undefined';
+
 export const supabase = hasSupabaseConfig
+  && !isStaticWebRender
   ? createClient(supabaseUrl as string, supabasePublishableKey as string, {
       auth: {
         ...(Platform.OS !== 'web' ? { storage: AsyncStorage } : {}),

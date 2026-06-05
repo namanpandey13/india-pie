@@ -1,20 +1,25 @@
-import { StyleSheet, View } from 'react-native';
-import { spacing, useThemeColors } from '../styles/theme';
+import { StyleSheet, Text, View } from 'react-native';
+import { spacing, typographyRoles, useThemeColors } from '../styles/theme';
 import { IconButton } from './icon-button';
 import { Typography } from './typography';
 
 export function TopBar({
   onChatPress,
   onNotificationPress,
-  title = 'Hausy',
+  title = 'hausy',
 }: {
   onChatPress?: () => void;
   onNotificationPress?: () => void;
   title?: string;
 }) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.topBar}>
-      <Typography variant="h2">{title}</Typography>
+      <View style={styles.wordmarkRow}>
+        <Text style={[styles.wordmark, { color: colors.ink }]}>{title}</Text>
+        <View style={[styles.logoDot, { backgroundColor: colors.brand }]} />
+      </View>
       <View style={styles.topActions}>
         <IconButton icon="notifications-outline" indicator onPress={onNotificationPress} />
         <IconButton icon="chatbubble-outline" onPress={onChatPress} />
@@ -66,6 +71,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: spacing.sm,
+  },
+  wordmarkRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+  },
+  wordmark: {
+    ...typographyRoles.wordmark,
+  },
+  logoDot: {
+    borderRadius: 5,
+    height: 9,
+    marginLeft: 3,
+    marginTop: 6,
+    width: 9,
   },
   topActions: {
     flexDirection: 'row',

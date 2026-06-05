@@ -48,8 +48,8 @@ export function HostSummary({ host }: { host: HostProfile }) {
           </Typography>
         </View>
       </View>
-      {host.credentials.map((credential) => (
-        <TrustSignal key={credential} label={credential} />
+      {host.credentials.map((credential, index) => (
+        <TrustSignal key={`${credential}-${index}`} label={credential} />
       ))}
     </Card>
   );

@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { eventStatusLabel, type Event } from '@hausy/types';
 import { countConfirmed, formatEventMeta } from '@hausy/utils';
 import { Avatar } from '../primitives/avatar';
@@ -37,15 +37,19 @@ export function EventCard({
         <IconButton
           icon={saved ? 'bookmark' : 'bookmark-outline'}
           onPress={onSave}
+          color={colors.white}
           style={[styles.saveButton, { backgroundColor: colors.overlayMedium, borderColor: colors.overlayBorder }]}
         />
       </View>
       <View style={styles.eventText}>
-        <View style={styles.eventTopline}>
-          <Badge label={eventStatusLabel[event.status]} active={event.status === 'confirmed'} />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.eventTopline}>
+          <Badge
+            label={eventStatusLabel[event.status]}
+            status={event.status === 'cancelled' ? 'cancelled' : event.status === 'confirmed' ? 'confirmed' : 'planning'}
+          />
           <Badge label={event.priceLabel} />
           {joined ? <Badge label="Going" active /> : null}
-        </View>
+        </ScrollView>
         <Typography variant="h2" style={styles.eventTitle}>
           {event.title}
         </Typography>
@@ -64,7 +68,7 @@ export function EventCard({
         <View style={styles.eventFooter}>
           <View style={styles.friendStack}>
             {event.attendees.slice(0, 6).map((attendee, index) => (
-              <View key={attendee.id} style={{ marginLeft: index === 0 ? 0 : -7 }}>
+              <View key={`${attendee.id}-${index}`} style={{ marginLeft: index === 0 ? 0 : -7 }}>
                 <Avatar label={attendee.initials.slice(0, 1)} color={attendee.color} size={30} />
               </View>
             ))}
