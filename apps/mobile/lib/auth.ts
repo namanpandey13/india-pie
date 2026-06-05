@@ -21,13 +21,13 @@ export const authRedirectTo =
 export async function createSessionFromUrl(url: string): Promise<ApiResult<AuthUser | null>> {
   try {
     if (!supabase) {
-      return fail('missing_supabase_config', 'Supabase is not configured yet.');
+      return fail('missingSupabaseConfig', 'Supabase is not configured yet.');
     }
 
     const { params, errorCode } = QueryParams.getQueryParams(url);
 
     if (errorCode) {
-      return fail('oauth_error', errorCode, true);
+      return fail('oauthError', errorCode, true);
     }
 
     const { access_token, code, refresh_token } = params;
@@ -37,7 +37,7 @@ export async function createSessionFromUrl(url: string): Promise<ApiResult<AuthU
 
       if (error) {
         logAppEvent('error', 'auth.exchangeCodeForSession', { message: error.message });
-        return fail('session_error', 'Could not finish Google sign-in.', true);
+        return fail('sessionError', 'Could not finish Google sign-in.', true);
       }
 
       return ok(mapAuthUser(data.user));
@@ -54,20 +54,20 @@ export async function createSessionFromUrl(url: string): Promise<ApiResult<AuthU
 
     if (error) {
       logAppEvent('error', 'auth.setSession', { message: error.message });
-      return fail('session_error', 'Could not finish Google sign-in.', true);
+      return fail('sessionError', 'Could not finish Google sign-in.', true);
     }
 
     return ok(mapAuthUser(data.user));
   } catch (error) {
     logAppEvent('error', 'auth.createSessionFromUrl', error);
-    return fail('session_error', 'Could not finish Google sign-in.', true);
+    return fail('sessionError', 'Could not finish Google sign-in.', true);
   }
 }
 
 export async function signInWithGoogle(): Promise<ApiResult<AuthUser | null>> {
   try {
     if (!supabase) {
-      return fail('missing_supabase_config', 'Supabase is not configured yet.');
+      return fail('missingSupabaseConfig', 'Supabase is not configured yet.');
     }
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -80,7 +80,7 @@ export async function signInWithGoogle(): Promise<ApiResult<AuthUser | null>> {
 
     if (error || !data.url) {
       logAppEvent('error', 'auth.signInWithOAuth', { message: error?.message });
-      return fail('oauth_error', 'Could not start Google sign-in.', true);
+      return fail('oauthError', 'Could not start Google sign-in.', true);
     }
 
     const result = await WebBrowser.openAuthSessionAsync(data.url, authRedirectTo);
@@ -92,14 +92,14 @@ export async function signInWithGoogle(): Promise<ApiResult<AuthUser | null>> {
     return createSessionFromUrl(result.url);
   } catch (error) {
     logAppEvent('error', 'auth.signInWithGoogle', error);
-    return fail('oauth_error', 'Could not start Google sign-in.', true);
+    return fail('oauthError', 'Could not start Google sign-in.', true);
   }
 }
 
 export async function signInWithPassword(email: string, password: string): Promise<ApiResult<AuthUser | null>> {
   try {
     if (!supabase) {
-      return fail('missing_supabase_config', 'Supabase is not configured yet.');
+      return fail('missingSupabaseConfig', 'Supabase is not configured yet.');
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -109,20 +109,20 @@ export async function signInWithPassword(email: string, password: string): Promi
 
     if (error) {
       logAppEvent('error', 'auth.signInWithPassword', { message: error.message });
-      return fail('password_login_error', 'Could not sign in with that email and password.', true);
+      return fail('passwordLoginError', 'Could not sign in with that email and password.', true);
     }
 
     return ok(mapAuthUser(data.user));
   } catch (error) {
     logAppEvent('error', 'auth.signInWithPassword', error);
-    return fail('password_login_error', 'Could not sign in with that email and password.', true);
+    return fail('passwordLoginError', 'Could not sign in with that email and password.', true);
   }
 }
 
 export async function signUpWithPassword(email: string, password: string): Promise<ApiResult<AuthUser | null>> {
   try {
     if (!supabase) {
-      return fail('missing_supabase_config', 'Supabase is not configured yet.');
+      return fail('missingSupabaseConfig', 'Supabase is not configured yet.');
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -132,12 +132,12 @@ export async function signUpWithPassword(email: string, password: string): Promi
 
     if (error) {
       logAppEvent('error', 'auth.signUpWithPassword', { message: error.message });
-      return fail('password_signup_error', 'Could not create an account with that email and password.', true);
+      return fail('passwordSignupError', 'Could not create an account with that email and password.', true);
     }
 
     if (!data.session) {
       return fail(
-        'email_confirmation_required',
+        'emailConfirmationRequired',
         'Account created. Check your email to confirm it, then log in.',
         false,
       );
@@ -146,7 +146,7 @@ export async function signUpWithPassword(email: string, password: string): Promi
     return ok(mapAuthUser(data.user));
   } catch (error) {
     logAppEvent('error', 'auth.signUpWithPassword', error);
-    return fail('password_signup_error', 'Could not create an account with that email and password.', true);
+    return fail('passwordSignupError', 'Could not create an account with that email and password.', true);
   }
 }
 

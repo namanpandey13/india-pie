@@ -11,7 +11,7 @@ export async function listHomeSummary() {
   const client = getApiClient();
 
   if (!client) {
-    return fail<HomeSummary>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<HomeSummary>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
@@ -37,7 +37,7 @@ export async function listHomeSummary() {
 
     if (savedResult.error || rsvpResult.error || inboxResult.error) {
       return fail<HomeSummary>(
-        'home_unavailable',
+        'homeUnavailable',
         savedResult.error?.message ?? rsvpResult.error?.message ?? inboxResult.error?.message ?? 'Could not load home.',
         true,
       );
@@ -50,6 +50,6 @@ export async function listHomeSummary() {
       upcomingRsvpCount: rsvpResult.data?.length ?? 0,
     });
   } catch {
-    return fail<HomeSummary>('home_unavailable', 'Could not load home.', true);
+    return fail<HomeSummary>('homeUnavailable', 'Could not load home.', true);
   }
 }

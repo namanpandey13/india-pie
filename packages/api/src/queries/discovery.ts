@@ -6,7 +6,7 @@ export type DiscoveryRow = {
 
 export function selectActiveDiscoveryMarkets(client: HausyApiClient) {
   return client
-    .from<DiscoveryRow[]>('discovery_markets')
+    .from<DiscoveryRow[]>('discoveryMarkets')
     .select('label')
     .eq('active', true)
     .order('position', { ascending: true })
@@ -15,7 +15,7 @@ export function selectActiveDiscoveryMarkets(client: HausyApiClient) {
 
 export function selectActiveDiscoveryTags(client: HausyApiClient) {
   return client
-    .from<DiscoveryRow[]>('discovery_tags')
+    .from<DiscoveryRow[]>('discoveryTags')
     .select('label')
     .eq('active', true)
     .order('position', { ascending: true });

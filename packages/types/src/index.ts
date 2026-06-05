@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const accentToneSchema = z.enum(['lime', 'coral', 'blue', 'yellow', 'violet']);
 export type AccentTone = z.infer<typeof accentToneSchema>;
 
-export const creatorStatusSchema = z.enum(['draft', 'in_review', 'approved', 'paused', 'rejected']);
+export const creatorStatusSchema = z.enum(['draft', 'inReview', 'approved', 'paused', 'rejected']);
 export type CreatorStatus = z.infer<typeof creatorStatusSchema>;
 
 export const verificationDocumentStatusSchema = z.enum(['uploaded', 'approved', 'rejected']);
@@ -12,7 +12,7 @@ export type VerificationDocumentStatus = z.infer<typeof verificationDocumentStat
 export const venueStatusSchema = z.enum(['unverified', 'verified', 'restricted']);
 export type VenueStatus = z.infer<typeof venueStatusSchema>;
 
-export const eventStatusSchema = z.enum(['draft', 'in_review', 'planning', 'confirmed', 'cancelled', 'completed']);
+export const eventStatusSchema = z.enum(['draft', 'inReview', 'planning', 'confirmed', 'cancelled', 'completed']);
 export type EventStatus = z.infer<typeof eventStatusSchema>;
 
 export const interestStatusSchema = z.enum(['interested', 'withdrawn']);
@@ -21,23 +21,23 @@ export type InterestStatus = z.infer<typeof interestStatusSchema>;
 export const rsvpStatusSchema = z.enum(['requested', 'accepted', 'confirmed', 'waitlisted', 'declined', 'cancelled']);
 export type RsvpStatus = z.infer<typeof rsvpStatusSchema>;
 
-export const attendanceStatusSchema = z.enum(['attended', 'no_show', 'excused']);
+export const attendanceStatusSchema = z.enum(['attended', 'noShow', 'excused']);
 export type AttendanceStatus = z.infer<typeof attendanceStatusSchema>;
 
 export const connectionStatusSchema = z.enum(['pending', 'accepted', 'blocked']);
 export type ConnectionStatus = z.infer<typeof connectionStatusSchema>;
 
 export const eventCheckpointKindSchema = z.enum([
-  'venue_verified',
-  'route_proof_added',
-  'guest_list_reviewed',
-  'creator_confirmed',
+  'venueVerified',
+  'routeProofAdded',
+  'guestListReviewed',
+  'creatorConfirmed',
 ]);
 export type EventCheckpointKind = z.infer<typeof eventCheckpointKindSchema>;
 
 export const eventStatusLabel: Record<EventStatus, string> = {
   draft: 'Draft',
-  in_review: 'In review',
+  inReview: 'In review',
   planning: 'Planning',
   confirmed: 'Confirmed',
   cancelled: 'Cancelled',
@@ -55,7 +55,7 @@ export const rsvpStatusLabel: Record<RsvpStatus, string> = {
 
 export const creatorStatusLabel: Record<CreatorStatus, string> = {
   draft: 'Draft',
-  in_review: 'In review',
+  inReview: 'In review',
   approved: 'Approved',
   paused: 'Paused',
   rejected: 'Rejected',
@@ -152,7 +152,7 @@ export type CreatorProfile = z.infer<typeof creatorProfileSchema>;
 export const creatorVerificationDocumentSchema = z.object({
   id: z.string(),
   creatorId: z.string(),
-  documentType: z.enum(['identity', 'venue_proof', 'professional_proof']),
+  documentType: z.enum(['identity', 'venueProof', 'professionalProof']),
   storagePath: z.string(),
   status: verificationDocumentStatusSchema,
   uploadedAt: z.string(),
@@ -272,7 +272,7 @@ export const planInboxMessageSchema = z.object({
   authorId: z.string(),
   body: z.string(),
   createdAt: z.string(),
-  kind: z.enum(['host_update', 'rsvp_status', 'message']),
+  kind: z.enum(['hostUpdate', 'rsvpStatus', 'message']),
 });
 export type PlanInboxMessage = z.infer<typeof planInboxMessageSchema>;
 

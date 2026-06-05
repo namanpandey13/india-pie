@@ -18,14 +18,14 @@ export function fail<T>(code: string, message: string, retryable = false): ApiRe
 export function toApiError(error: unknown, fallback = 'Something went wrong.'): ApiError {
   if (error && typeof error === 'object' && 'message' in error) {
     return {
-      code: 'unexpected_error',
+      code: 'unexpectedError',
       message: String((error as { message: unknown }).message || fallback),
       retryable: true,
     };
   }
 
   return {
-    code: 'unexpected_error',
+    code: 'unexpectedError',
     message: fallback,
     retryable: true,
   };

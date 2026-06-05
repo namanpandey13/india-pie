@@ -3,9 +3,9 @@ import type { LoginProfile } from '@hausy/types';
 
 export type ProfileRow = {
   id: string;
-  display_name: string | null;
+  displayName: string | null;
   handle: string | null;
-  avatar_url: string | null;
+  avatarUrl: string | null;
   city: string;
   bio: string | null;
   instagram: string | null;
@@ -15,7 +15,7 @@ export type ProfileRow = {
 export function selectProfileById(client: HausyApiClient, profileId: string) {
   return client
     .from<ProfileRow>('profiles')
-    .select('id,display_name,handle,avatar_url,city,bio,instagram,linkedin')
+    .select('id,displayName,handle,avatarUrl,city,bio,instagram,linkedin')
     .eq('id', profileId)
     .maybeSingle();
 }
@@ -26,7 +26,7 @@ export function updateProfileById(client: HausyApiClient, profileId: string, inp
     .update({
       bio: input.intent,
       city: input.city,
-      display_name: input.name,
+      displayName: input.name,
       instagram: input.instagram,
       linkedin: input.linkedin,
     })

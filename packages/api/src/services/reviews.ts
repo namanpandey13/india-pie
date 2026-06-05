@@ -7,19 +7,19 @@ export async function listReviewsForEvent(eventId: string) {
   const client = getApiClient();
 
   if (!client) {
-    return fail<Review[]>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<Review[]>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
     const { data, error } = await selectReviewsForEvent(client, eventId);
 
     if (error) {
-      return fail<Review[]>('reviews_unavailable', error.message ?? 'Could not load reviews.', true);
+      return fail<Review[]>('reviewsUnavailable', error.message ?? 'Could not load reviews.', true);
     }
 
     return ok<Review[]>((data ?? []).map(mapReview));
   } catch {
-    return fail<Review[]>('reviews_unavailable', 'Could not load reviews.', true);
+    return fail<Review[]>('reviewsUnavailable', 'Could not load reviews.', true);
   }
 }
 
@@ -27,29 +27,29 @@ export async function listEventCheckpointsForEvent(eventId: string) {
   const client = getApiClient();
 
   if (!client) {
-    return fail<EventCheckpoint[]>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<EventCheckpoint[]>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
     const { data, error } = await selectCheckpointsForEvent(client, eventId);
 
     if (error) {
-      return fail<EventCheckpoint[]>('checkpoints_unavailable', error.message ?? 'Could not load event checkpoints.', true);
+      return fail<EventCheckpoint[]>('checkpointsUnavailable', error.message ?? 'Could not load event checkpoints.', true);
     }
 
     return ok<EventCheckpoint[]>((data ?? []).map(mapCheckpoint));
   } catch {
-    return fail<EventCheckpoint[]>('checkpoints_unavailable', 'Could not load event checkpoints.', true);
+    return fail<EventCheckpoint[]>('checkpointsUnavailable', 'Could not load event checkpoints.', true);
   }
 }
 
 function mapReview(row: ReviewRow): Review {
-  const reviewerName = row.profiles?.display_name ?? 'Hausy attendee';
+  const reviewerName = row.profiles?.displayName ?? 'Hausy attendee';
 
   return {
     id: row.id,
-    eventId: row.event_id,
-    hostId: row.creator_id ?? '',
+    eventId: row.eventId,
+    hostId: row.creatorId ?? '',
     reviewerName,
     reviewerInitials: initialsFor(reviewerName),
     tone: 'violet',
@@ -61,13 +61,13 @@ function mapReview(row: ReviewRow): Review {
 function mapCheckpoint(row: EventCheckpointRow): EventCheckpoint {
   return {
     id: row.id,
-    eventId: row.event_id,
+    eventId: row.eventId,
     kind:
-      row.kind === 'route_proof_added' || row.kind === 'guest_list_reviewed' || row.kind === 'creator_confirmed'
+      row.kind === 'routeProofAdded' || row.kind === 'guestListReviewed' || row.kind === 'creatorConfirmed'
         ? row.kind
-        : 'venue_verified',
+        : 'venueVerified',
     label: row.label,
-    verifiedAt: row.verified_at,
+    verifiedAt: row.verifiedAt,
   };
 }
 

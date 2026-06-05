@@ -13,8 +13,8 @@ if (!isUsableValue(supabaseUrl) || !isUsableValue(publishableKey)) {
 
 const checks = [
   {
-    name: 'discovery_markets',
-    path: '/rest/v1/discovery_markets?select=label&active=eq.true&limit=1',
+    name: 'discoveryMarkets',
+    path: '/rest/v1/discoveryMarkets?select=label&active=eq.true&limit=1',
   },
   {
     name: 'events',

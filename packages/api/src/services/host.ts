@@ -16,19 +16,19 @@ export async function listCreatorTemplates() {
   const client = getApiClient();
 
   if (!client) {
-    return fail<string[]>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<string[]>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
     const { data, error } = await selectActiveCreatorTemplates(client);
 
     if (error) {
-      return fail<string[]>('creator_templates_unavailable', error.message ?? 'Could not load creator templates.', true);
+      return fail<string[]>('creatorTemplatesUnavailable', error.message ?? 'Could not load creator templates.', true);
     }
 
     return ok((data ?? []).map((template) => template.label));
   } catch {
-    return fail<string[]>('creator_templates_unavailable', 'Could not load creator templates.', true);
+    return fail<string[]>('creatorTemplatesUnavailable', 'Could not load creator templates.', true);
   }
 }
 
@@ -40,7 +40,7 @@ export function createHostDraft(input: HostDraft): ApiResult<HostDraft & { id: s
       status: 'draft' as const,
     });
   } catch {
-    return fail<HostDraft & { id: string; status: 'draft' }>('draft_failed', 'Could not create this creator draft.', true);
+    return fail<HostDraft & { id: string; status: 'draft' }>('draftFailed', 'Could not create this creator draft.', true);
   }
 }
 
@@ -48,7 +48,7 @@ export async function getHostProfile(hostId: string) {
   const client = getApiClient();
 
   if (!client) {
-    return fail<HostProfile | null>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<HostProfile | null>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
@@ -60,7 +60,7 @@ export async function getHostProfile(hostId: string) {
 
     if (error || linksResult.error || credentialsResult.error) {
       return fail<HostProfile | null>(
-        'creator_unavailable',
+        'creatorUnavailable',
         error?.message ?? linksResult.error?.message ?? credentialsResult.error?.message ?? 'Could not load this creator.',
         true,
       );
@@ -68,7 +68,7 @@ export async function getHostProfile(hostId: string) {
 
     return ok<HostProfile | null>(creator ? mapHostProfile(creator, linksResult.data ?? [], credentialsResult.data ?? []) : null);
   } catch {
-    return fail<HostProfile | null>('creator_unavailable', 'Could not load this creator.', true);
+    return fail<HostProfile | null>('creatorUnavailable', 'Could not load this creator.', true);
   }
 }
 
@@ -76,7 +76,7 @@ export async function getCreatorProfile(creatorId: string): Promise<ApiResult<Cr
   const client = getApiClient();
 
   if (!client) {
-    return fail<CreatorProfile | null>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<CreatorProfile | null>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   const [{ data: creator, error }, linksResult, credentialsResult] = await Promise.all([
@@ -86,7 +86,7 @@ export async function getCreatorProfile(creatorId: string): Promise<ApiResult<Cr
   ]);
 
   if (error || linksResult.error || credentialsResult.error || !creator) {
-    return fail<CreatorProfile | null>('creator_unavailable', error?.message ?? 'Could not load this creator.', true);
+    return fail<CreatorProfile | null>('creatorUnavailable', error?.message ?? 'Could not load this creator.', true);
   }
 
   return ok<CreatorProfile | null>(mapCreatorProfile(creator, linksResult.data ?? [], credentialsResult.data ?? []));
@@ -100,7 +100,7 @@ export async function createCreatorSubmission(input: Omit<CreatorSubmission, 'id
       status: 'draft',
     });
   } catch {
-    return fail<CreatorSubmission>('creator_submission_failed', 'Could not create this creator submission.', true);
+    return fail<CreatorSubmission>('creatorSubmissionFailed', 'Could not create this creator submission.', true);
   }
 }
 
@@ -109,15 +109,15 @@ export async function submitCreatorEvent(input: CreatorSubmission) {
   const profileId = await getAuthenticatedProfileId();
 
   if (!client || !profileId) {
-    return fail<CreatorSubmission>('auth_required', 'Sign in before submitting a creator plan.', false);
+    return fail<CreatorSubmission>('authRequired', 'Sign in before submitting a creator plan.', false);
   }
 
   try {
     return ok<CreatorSubmission>({
       ...input,
-      status: 'in_review',
+      status: 'inReview',
     });
   } catch {
-    return fail<CreatorSubmission>('creator_submit_failed', 'Could not submit this creator plan.', true);
+    return fail<CreatorSubmission>('creatorSubmitFailed', 'Could not submit this creator plan.', true);
   }
 }

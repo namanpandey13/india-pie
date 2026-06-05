@@ -2,28 +2,28 @@ import type { HausyApiClient } from '../client';
 
 export type RsvpRequestRow = {
   id: string;
-  profile_id: string;
-  event_id: string;
-  session_id: string | null;
+  profileId: string;
+  eventId: string;
+  sessionId: string | null;
   status: string;
   note: string | null;
 };
 
-const RSVP_SELECT = 'id,profile_id,event_id,session_id,status,note';
+const RSVP_SELECT = 'id,profileId,eventId,sessionId,status,note';
 const ACTIVE_RSVP_STATUSES = ['requested', 'accepted', 'confirmed', 'waitlisted'] as const;
 
 export function selectActiveRsvpsForEvent(client: HausyApiClient, profileId: string, eventId: string) {
   return client
-    .from<RsvpRequestRow[]>('rsvp_requests')
+    .from<RsvpRequestRow[]>('rsvpRequests')
     .select(RSVP_SELECT)
-    .eq('profile_id', profileId)
-    .eq('event_id', eventId)
+    .eq('profileId', profileId)
+    .eq('eventId', eventId)
     .in('status', ACTIVE_RSVP_STATUSES)
     .limit(1);
 }
 
 export function selectActiveRsvpsForProfile(client: HausyApiClient, profileId: string) {
-  return client.from<unknown[]>('rsvp_requests').select('id').eq('profile_id', profileId).in('status', ACTIVE_RSVP_STATUSES);
+  return client.from<unknown[]>('rsvpRequests').select('id').eq('profileId', profileId).in('status', ACTIVE_RSVP_STATUSES);
 }
 
 export function insertRsvpRequest(client: HausyApiClient, input: {
@@ -33,12 +33,12 @@ export function insertRsvpRequest(client: HausyApiClient, input: {
   sessionId?: string;
 }) {
   return client
-    .from<RsvpRequestRow>('rsvp_requests')
+    .from<RsvpRequestRow>('rsvpRequests')
     .insert({
-      event_id: input.eventId,
+      eventId: input.eventId,
       note: input.note,
-      profile_id: input.profileId,
-      session_id: input.sessionId ?? null,
+      profileId: input.profileId,
+      sessionId: input.sessionId ?? null,
       status: 'requested',
     })
     .select(RSVP_SELECT)
@@ -47,10 +47,10 @@ export function insertRsvpRequest(client: HausyApiClient, input: {
 
 export function updateRsvpRequestCancelled(client: HausyApiClient, profileId: string, id: string) {
   return client
-    .from<RsvpRequestRow>('rsvp_requests')
+    .from<RsvpRequestRow>('rsvpRequests')
     .update({ status: 'cancelled' })
     .eq('id', id)
-    .eq('profile_id', profileId)
+    .eq('profileId', profileId)
     .select(RSVP_SELECT)
     .single();
 }

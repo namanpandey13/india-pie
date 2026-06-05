@@ -35,7 +35,7 @@ export async function listDiscoveryMetadata() {
   const client = getApiClient();
 
   if (!client) {
-    return fail<DiscoveryMetadata>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<DiscoveryMetadata>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
@@ -46,7 +46,7 @@ export async function listDiscoveryMetadata() {
 
     if (marketsResult.error || tagsResult.error) {
       return fail<DiscoveryMetadata>(
-        'discovery_metadata_unavailable',
+        'discoveryMetadataUnavailable',
         marketsResult.error?.message ?? tagsResult.error?.message ?? 'Could not load discovery metadata.',
         true,
       );
@@ -57,7 +57,7 @@ export async function listDiscoveryMetadata() {
       eventTags: (tagsResult.data ?? []).map((tag) => tag.label),
     });
   } catch {
-    return fail<DiscoveryMetadata>('discovery_metadata_unavailable', 'Could not load discovery metadata.', true);
+    return fail<DiscoveryMetadata>('discoveryMetadataUnavailable', 'Could not load discovery metadata.', true);
   }
 }
 
@@ -65,21 +65,21 @@ export async function listEvents(filters: EventFilters = {}) {
   const client = getApiClient();
 
   if (!client) {
-    return fail<Event[]>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<Event[]>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
     const { data, error } = await selectPublicEvents(client);
 
     if (error) {
-      return fail<Event[]>('events_unavailable', error.message ?? 'Could not load events.', true);
+      return fail<Event[]>('eventsUnavailable', error.message ?? 'Could not load events.', true);
     }
 
     const events = data ?? [];
     const mappedEvents = await hydrateEvents(events);
     return ok(applyEventFilters(mappedEvents, filters));
   } catch {
-    return fail<Event[]>('events_unavailable', 'Could not load events.', true);
+    return fail<Event[]>('eventsUnavailable', 'Could not load events.', true);
   }
 }
 
@@ -91,14 +91,14 @@ export async function getEventById(id?: string) {
   }
 
   if (!client) {
-    return fail<Event | null>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<Event | null>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
     const { data, error } = await selectPublicEventById(client, id);
 
     if (error) {
-      return fail<Event | null>('event_unavailable', error.message ?? 'Could not load this event.', true);
+      return fail<Event | null>('eventUnavailable', error.message ?? 'Could not load this event.', true);
     }
 
     if (!data) {
@@ -108,7 +108,7 @@ export async function getEventById(id?: string) {
     const [event] = await hydrateEvents([data]);
     return ok<Event | null>(event ?? null);
   } catch {
-    return fail<Event | null>('event_unavailable', 'Could not load this event.', true);
+    return fail<Event | null>('eventUnavailable', 'Could not load this event.', true);
   }
 }
 
@@ -119,8 +119,8 @@ async function hydrateEvents(events: EventRow[]) {
     return [];
   }
 
-  const creatorIds = unique(events.map((event) => event.creator_id));
-  const venueIds = unique(events.map((event) => event.venue_id));
+  const creatorIds = unique(events.map((event) => event.creatorId));
+  const venueIds = unique(events.map((event) => event.venueId));
   const eventIds = unique(events.map((event) => event.id));
 
   const [creatorsResult, venuesResult, sessionsResult, checkpointsResult, tagsResult, promptsResult, attendeesResult] =
@@ -159,8 +159,8 @@ async function hydrateEvents(events: EventRow[]) {
 
   return events
     .map((event) => {
-      const creator = creatorsById.get(event.creator_id);
-      const venue = venuesById.get(event.venue_id);
+      const creator = creatorsById.get(event.creatorId);
+      const venue = venuesById.get(event.venueId);
 
       if (!creator || !venue) {
         return null;
@@ -170,8 +170,8 @@ async function hydrateEvents(events: EventRow[]) {
         attendeePreviews: byEventId(attendeesResult.data ?? [], event.id),
         checkpoints: byEventId(checkpointsResult.data ?? [], event.id),
         creator,
-        creatorCredentials: byCreatorId(creatorCredentialsResult.data ?? [], event.creator_id),
-        creatorLinks: byCreatorId(creatorLinksResult.data ?? [], event.creator_id),
+        creatorCredentials: byCreatorId(creatorCredentialsResult.data ?? [], event.creatorId),
+        creatorLinks: byCreatorId(creatorLinksResult.data ?? [], event.creatorId),
         event,
         prompts: byEventId(promptsResult.data ?? [], event.id),
         session: firstSessionByEventId(sessionsResult.data ?? [], event.id),
@@ -213,16 +213,16 @@ function byId<T extends { id: string }>(rows: T[]) {
   return new Map(rows.map((row) => [row.id, row]));
 }
 
-function byEventId<T extends { event_id: string }>(rows: T[], eventId: string) {
-  return rows.filter((row) => row.event_id === eventId);
+function byEventId<T extends { eventId: string }>(rows: T[], eventId: string) {
+  return rows.filter((row) => row.eventId === eventId);
 }
 
-function byCreatorId<T extends { creator_id: string }>(rows: T[], creatorId: string) {
-  return rows.filter((row) => row.creator_id === creatorId);
+function byCreatorId<T extends { creatorId: string }>(rows: T[], creatorId: string) {
+  return rows.filter((row) => row.creatorId === creatorId);
 }
 
 function firstSessionByEventId(rows: EventSessionRow[], eventId: string) {
   return rows
-    .filter((row) => row.event_id === eventId)
-    .sort((left, right) => new Date(left.starts_at).getTime() - new Date(right.starts_at).getTime())[0] ?? null;
+    .filter((row) => row.eventId === eventId)
+    .sort((left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime())[0] ?? null;
 }

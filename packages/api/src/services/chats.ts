@@ -13,14 +13,14 @@ export async function listPlanInboxThreads() {
   const profileId = await getAuthenticatedProfileId();
 
   if (!client || !profileId) {
-    return fail<PlanInboxThread[]>('auth_required', 'Sign in to view Plan Inbox.', false);
+    return fail<PlanInboxThread[]>('authRequired', 'Sign in to view Plan Inbox.', false);
   }
 
   try {
     const { data: threads, error } = await selectPlanInboxThreads(client);
 
     if (error) {
-      return fail<PlanInboxThread[]>('inbox_unavailable', error.message ?? 'Could not load Plan Inbox.', true);
+      return fail<PlanInboxThread[]>('inboxUnavailable', error.message ?? 'Could not load Plan Inbox.', true);
     }
 
     const threadIds = (threads ?? []).map((thread) => thread.id);
@@ -30,21 +30,21 @@ export async function listPlanInboxThreads() {
         : { data: [], error: null };
 
     if (messagesResult.error) {
-      return fail<PlanInboxThread[]>('inbox_unavailable', messagesResult.error.message ?? 'Could not load Plan Inbox.', true);
+      return fail<PlanInboxThread[]>('inboxUnavailable', messagesResult.error.message ?? 'Could not load Plan Inbox.', true);
     }
 
     return ok<PlanInboxThread[]>(
       (threads ?? []).map((thread) => ({
         id: thread.id,
-        eventId: thread.event_id,
-        messages: (messagesResult.data ?? []).filter((message) => message.thread_id === thread.id).map(mapMessage),
+        eventId: thread.eventId,
+        messages: (messagesResult.data ?? []).filter((message) => message.threadId === thread.id).map(mapMessage),
         status: thread.status,
         title: thread.title,
         unreadCount: 0,
       })),
     );
   } catch {
-    return fail<PlanInboxThread[]>('inbox_unavailable', 'Could not load Plan Inbox.', true);
+    return fail<PlanInboxThread[]>('inboxUnavailable', 'Could not load Plan Inbox.', true);
   }
 }
 
@@ -53,7 +53,7 @@ export async function sendPlanInboxMessage(input: Omit<PlanInboxMessage, 'id' | 
   const profileId = await getAuthenticatedProfileId();
 
   if (!client || !profileId) {
-    return fail<PlanInboxMessage>('auth_required', 'Sign in before sending messages.', false);
+    return fail<PlanInboxMessage>('authRequired', 'Sign in before sending messages.', false);
   }
 
   try {
@@ -65,12 +65,12 @@ export async function sendPlanInboxMessage(input: Omit<PlanInboxMessage, 'id' | 
     });
 
     if (error || !data) {
-      return fail<PlanInboxMessage>('message_failed', error?.message ?? 'Could not send this message.', true);
+      return fail<PlanInboxMessage>('messageFailed', error?.message ?? 'Could not send this message.', true);
     }
 
     return ok<PlanInboxMessage>(mapMessage(data));
   } catch {
-    return fail<PlanInboxMessage>('message_failed', 'Could not send this message.', true);
+    return fail<PlanInboxMessage>('messageFailed', 'Could not send this message.', true);
   }
 }
 
@@ -81,10 +81,10 @@ export function listChatsForUser() {
 function mapMessage(row: MessageRow): PlanInboxMessage {
   return {
     id: row.id,
-    authorId: row.author_id,
+    authorId: row.authorId,
     body: row.body,
-    createdAt: row.created_at,
+    createdAt: row.createdAt,
     kind: row.kind,
-    threadId: row.thread_id,
+    threadId: row.threadId,
   };
 }

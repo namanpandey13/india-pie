@@ -174,6 +174,7 @@ Design for:
 - future recommendations
 
 Schema rules:
+- Use camelCase for every Hausy-owned table, column, enum type, enum value, API field, TypeScript identifier, and app-owned error code. Do not introduce snake_case in app code or database headers; only keep vendor-defined Supabase/Auth/Storage fields in their required external names.
 - Use enums for all lifecycle and review states.
 - Avoid duplicate states; event visibility comes from `planning` and `confirmed`, not `published`.
 - Keep creator onboarding on the `creators` row; do not add a separate application table for launch.

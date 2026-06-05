@@ -3,7 +3,7 @@
 
 create extension if not exists "pgcrypto";
 
-insert into public.discovery_markets (id, label, active, position)
+insert into public."discoveryMarkets" (id, label, active, position)
 values ('delhi-ncr', 'Delhi NCR', true, 1)
 on conflict (id) do update
 set
@@ -11,7 +11,7 @@ set
   label = excluded.label,
   position = excluded.position;
 
-insert into public.discovery_tags (id, label, active, position)
+insert into public."discoveryTags" (id, label, active, position)
 values
   ('for-you', 'For You', true, 1),
   ('tonight', 'Tonight', true, 2),
@@ -25,7 +25,7 @@ set
   label = excluded.label,
   position = excluded.position;
 
-insert into public.creator_templates (id, label, active, position)
+insert into public."creatorTemplates" (id, label, active, position)
 values
   ('game-night', 'game night', true, 1),
   ('photo-walk', 'photo walk', true, 2),
@@ -134,7 +134,7 @@ set
   raw_user_meta_data = excluded.raw_user_meta_data,
   updated_at = now();
 
-insert into public.profiles (id, display_name, handle, city, bio, instagram, linkedin)
+insert into public.profiles (id, "displayName", handle, city, bio, instagram, linkedin)
 values
   (
     '11111111-1111-4111-8111-111111111111',
@@ -194,28 +194,28 @@ on conflict (id) do update
 set
   bio = excluded.bio,
   city = excluded.city,
-  display_name = excluded.display_name,
+  "displayName" = excluded."displayName",
   handle = excluded.handle,
   instagram = excluded.instagram,
   linkedin = excluded.linkedin,
-  updated_at = now();
+  "updatedAt" = now();
 
 insert into public.creators (
   id,
-  profile_id,
+  "profileId",
   handle,
-  display_name,
+  "displayName",
   title,
   bio,
   philosophy,
-  community_tone,
+  "communityTone",
   status,
-  submitted_at,
-  reviewed_at,
+  "submittedAt",
+  "reviewedAt",
   rating,
-  repeat_rate,
-  past_events,
-  recurring_attendees
+  "repeatRate",
+  "pastEvents",
+  "recurringAttendees"
 )
 values
   (
@@ -272,16 +272,16 @@ values
 on conflict (id) do update
 set
   bio = excluded.bio,
-  community_tone = excluded.community_tone,
-  display_name = excluded.display_name,
+  "communityTone" = excluded."communityTone",
+  "displayName" = excluded."displayName",
   philosophy = excluded.philosophy,
   rating = excluded.rating,
-  repeat_rate = excluded.repeat_rate,
+  "repeatRate" = excluded."repeatRate",
   status = excluded.status,
   title = excluded.title,
-  updated_at = now();
+  "updatedAt" = now();
 
-insert into public.creator_credentials (creator_id, label)
+insert into public."creatorCredentials" ("creatorId", label)
 values
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Instagram verified'),
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'LinkedIn linked'),
@@ -292,9 +292,9 @@ values
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'LinkedIn linked'),
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'Guest list reviewed'),
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'Past host reviews visible')
-on conflict (creator_id, label) do nothing;
+on conflict ("creatorId", label) do nothing;
 
-insert into public.creator_links (creator_id, label, url)
+insert into public."creatorLinks" ("creatorId", label, url)
 values
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Instagram verified', 'https://instagram.com/taraplays'),
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'LinkedIn linked', 'https://linkedin.com/in/tarasingh'),
@@ -302,10 +302,10 @@ values
   ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'Portfolio linked', 'https://zoyakhan.example'),
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'LinkedIn linked', 'https://linkedin.com/in/devarora'),
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'Past host reviews visible', null)
-on conflict (creator_id, label) do update
+on conflict ("creatorId", label) do update
 set url = excluded.url;
 
-insert into public.venues (id, name, locality, city, address_line, status, created_by)
+insert into public.venues (id, name, locality, city, "addressLine", status, "createdBy")
 values
   (
     'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
@@ -336,21 +336,21 @@ values
   )
 on conflict (id) do update
 set
-  address_line = excluded.address_line,
+  "addressLine" = excluded."addressLine",
   locality = excluded.locality,
   name = excluded.name,
   status = excluded.status,
-  updated_at = now();
+  "updatedAt" = now();
 
 insert into public.events (
   id,
-  creator_id,
-  venue_id,
+  "creatorId",
+  "venueId",
   title,
   category,
-  image_url,
-  poster_text,
-  price_label,
+  "imageUrl",
+  "posterText",
+  "priceLabel",
   vibe,
   about,
   capacity,
@@ -403,13 +403,13 @@ on conflict (id) do update
 set
   about = excluded.about,
   capacity = excluded.capacity,
-  image_url = excluded.image_url,
-  price_label = excluded.price_label,
+  "imageUrl" = excluded."imageUrl",
+  "priceLabel" = excluded."priceLabel",
   status = excluded.status,
   title = excluded.title,
-  updated_at = now();
+  "updatedAt" = now();
 
-insert into public.event_sessions (id, event_id, starts_at, ends_at, capacity)
+insert into public."eventSessions" (id, "eventId", "startsAt", "endsAt", capacity)
 values
   (
     '13131313-1313-4313-8313-131313131313',
@@ -435,10 +435,10 @@ values
 on conflict (id) do update
 set
   capacity = excluded.capacity,
-  ends_at = excluded.ends_at,
-  starts_at = excluded.starts_at;
+  "endsAt" = excluded."endsAt",
+  "startsAt" = excluded."startsAt";
 
-insert into public.event_tags (event_id, tag)
+insert into public."eventTags" ("eventId", tag)
 values
   ('12121212-1212-4212-8212-121212121212', 'free'),
   ('12121212-1212-4212-8212-121212121212', 'today'),
@@ -447,9 +447,9 @@ values
   ('23232323-2323-4232-8232-232323232323', 'creator-led'),
   ('34343434-3434-4343-8343-343434343434', 'curated'),
   ('34343434-3434-4343-8343-343434343434', 'creator-led')
-on conflict (event_id, tag) do nothing;
+on conflict ("eventId", tag) do nothing;
 
-insert into public.event_prompts (event_id, prompt, position)
+insert into public."eventPrompts" ("eventId", prompt, position)
 values
   ('12121212-1212-4212-8212-121212121212', 'Which game makes you weirdly competitive?', 1),
   ('12121212-1212-4212-8212-121212121212', 'Are you coming solo or with a friend?', 2),
@@ -462,7 +462,7 @@ values
   ('34343434-3434-4343-8343-343434343434', 'Are you hiring, fundraising, or selling?', 3)
 on conflict do nothing;
 
-insert into public.event_attendee_previews (id, event_id, display_name, role, signal, status, initials, accent)
+insert into public."eventAttendeePreviews" (id, "eventId", "displayName", role, signal, status, initials, accent)
 values
   ('14141414-1414-4414-8414-141414141414', '12121212-1212-4212-8212-121212121212', 'Riya Malhotra', 'Product designer', '2 mutuals, also into Catan', 'confirmed', 'RM', 'violet'),
   ('15151515-1515-4515-8515-151515151515', '12121212-1212-4212-8212-121212121212', 'Arjun Bedi', 'Founder', 'Attended 3 plans', 'confirmed', 'AB', 'violet'),
@@ -479,22 +479,22 @@ set
   signal = excluded.signal,
   status = excluded.status;
 
-insert into public.event_checkpoints (id, event_id, kind, label, verified_at)
+insert into public."eventCheckpoints" (id, "eventId", kind, label, "verifiedAt")
 values
-  ('17171717-1717-4717-8717-171717171717', '12121212-1212-4212-8212-121212121212', 'venue_verified', 'Venue verified by Hausy', now() - interval '2 days'),
-  ('18181818-1818-4818-8818-181818181818', '12121212-1212-4212-8212-121212121212', 'creator_confirmed', 'Creator confirmed the table plan', now() - interval '2 days'),
-  ('19191919-1919-4919-8919-191919191919', '12121212-1212-4212-8212-121212121212', 'guest_list_reviewed', 'Guest list reviewed for fit', now() - interval '1 day'),
-  ('28282828-2828-4828-8828-282828282828', '23232323-2323-4232-8232-232323232323', 'venue_verified', 'Meeting point verified by Hausy', now() - interval '2 days'),
-  ('29292929-2929-4929-8929-292929292929', '23232323-2323-4232-8232-232323232323', 'route_proof_added', 'Route proof added by creator', now() - interval '1 day'),
-  ('39393939-3939-4939-8939-393939393939', '34343434-3434-4343-8343-343434343434', 'guest_list_reviewed', 'Guest list reviewed for builder fit', now() - interval '2 days'),
-  ('40404040-4040-4040-8040-404040404040', '34343434-3434-4343-8343-343434343434', 'creator_confirmed', 'Creator confirmed restaurant table', now() - interval '1 day'),
-  ('41414141-4141-4141-8141-414141414141', '34343434-3434-4343-8343-343434343434', 'venue_verified', 'Venue verified by Hausy', now() - interval '1 day')
-on conflict (event_id, kind) do update
+  ('17171717-1717-4717-8717-171717171717', '12121212-1212-4212-8212-121212121212', 'venueVerified', 'Venue verified by Hausy', now() - interval '2 days'),
+  ('18181818-1818-4818-8818-181818181818', '12121212-1212-4212-8212-121212121212', 'creatorConfirmed', 'Creator confirmed the table plan', now() - interval '2 days'),
+  ('19191919-1919-4919-8919-191919191919', '12121212-1212-4212-8212-121212121212', 'guestListReviewed', 'Guest list reviewed for fit', now() - interval '1 day'),
+  ('28282828-2828-4828-8828-282828282828', '23232323-2323-4232-8232-232323232323', 'venueVerified', 'Meeting point verified by Hausy', now() - interval '2 days'),
+  ('29292929-2929-4929-8929-292929292929', '23232323-2323-4232-8232-232323232323', 'routeProofAdded', 'Route proof added by creator', now() - interval '1 day'),
+  ('39393939-3939-4939-8939-393939393939', '34343434-3434-4343-8343-343434343434', 'guestListReviewed', 'Guest list reviewed for builder fit', now() - interval '2 days'),
+  ('40404040-4040-4040-8040-404040404040', '34343434-3434-4343-8343-343434343434', 'creatorConfirmed', 'Creator confirmed restaurant table', now() - interval '1 day'),
+  ('41414141-4141-4141-8141-414141414141', '34343434-3434-4343-8343-343434343434', 'venueVerified', 'Venue verified by Hausy', now() - interval '1 day')
+on conflict ("eventId", kind) do update
 set
   label = excluded.label,
-  verified_at = excluded.verified_at;
+  "verifiedAt" = excluded."verifiedAt";
 
-insert into public.reviews (id, event_id, reviewer_id, creator_id, body, context)
+insert into public.reviews (id, "eventId", "reviewerId", "creatorId", body, context)
 values
   (
     '51515151-5151-4151-8151-515151515151',
@@ -525,7 +525,7 @@ set
   body = excluded.body,
   context = excluded.context;
 
-insert into public.plan_inbox_threads (id, event_id, title, status)
+insert into public."planInboxThreads" (id, "eventId", title, status)
 values
   ('61616161-6161-4161-8161-616161616161', '12121212-1212-4212-8212-121212121212', 'Board Game Baithak plan updates', 'open'),
   ('62626262-6262-4262-8262-626262626262', '23232323-2323-4232-8232-232323232323', 'Lodhi Film Photo Walk plan updates', 'open'),
@@ -535,13 +535,13 @@ set
   status = excluded.status,
   title = excluded.title;
 
-insert into public.plan_inbox_messages (id, thread_id, author_id, kind, body, created_at)
+insert into public."planInboxMessages" (id, "threadId", "authorId", kind, body, "createdAt")
 values
   (
     '71717171-7171-4171-8171-717171717171',
     '61616161-6161-4161-8161-616161616161',
     '11111111-1111-4111-8111-111111111111',
-    'host_update',
+    'hostUpdate',
     'I will split tables by game comfort. Solo folks, you are covered.',
     now() - interval '1 day'
   ),
@@ -549,7 +549,7 @@ values
     '72727272-7272-4272-8272-727272727272',
     '62626262-6262-4262-8262-626262626262',
     '22222222-2222-4222-8222-222222222222',
-    'host_update',
+    'hostUpdate',
     'Route and cafe stop will be shared before arrival.',
     now() - interval '1 day'
   ),
@@ -557,7 +557,7 @@ values
     '73737373-7373-4373-8373-737373737373',
     '63636363-6363-4363-8363-636363636363',
     '33333333-3333-4333-8333-333333333333',
-    'host_update',
+    'hostUpdate',
     'Guest list review closes 24 hours before the dinner.',
     now() - interval '1 day'
   )

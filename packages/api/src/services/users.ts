@@ -7,14 +7,14 @@ export async function getCurrentUser() {
   const client = getApiClient();
 
   if (!client) {
-    return fail<AuthUser | null>('supabase_not_configured', 'Supabase is not configured for this build.', false);
+    return fail<AuthUser | null>('supabaseNotConfigured', 'Supabase is not configured for this build.', false);
   }
 
   try {
     const { data, error } = await client.auth.getUser();
 
     if (error) {
-      return fail<AuthUser | null>('auth_unavailable', error.message ?? 'Could not load the current user.', true);
+      return fail<AuthUser | null>('authUnavailable', error.message ?? 'Could not load the current user.', true);
     }
 
     const user = data?.user;
@@ -30,7 +30,7 @@ export async function getCurrentUser() {
       name: typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null,
     });
   } catch {
-    return fail<AuthUser | null>('auth_unavailable', 'Could not load the current user.', true);
+    return fail<AuthUser | null>('authUnavailable', 'Could not load the current user.', true);
   }
 }
 
@@ -46,12 +46,12 @@ export async function getProfile() {
     const { data, error } = await selectProfileById(client, profileId);
 
     if (error) {
-      return fail<LoginProfile | null>('profile_unavailable', error.message ?? 'Could not load profile.', true);
+      return fail<LoginProfile | null>('profileUnavailable', error.message ?? 'Could not load profile.', true);
     }
 
     return ok<LoginProfile | null>(data ? mapLoginProfile(data) : null);
   } catch {
-    return fail<LoginProfile | null>('profile_unavailable', 'Could not load profile.', true);
+    return fail<LoginProfile | null>('profileUnavailable', 'Could not load profile.', true);
   }
 }
 
@@ -60,28 +60,28 @@ export async function updateProfile(input: Partial<LoginProfile>) {
   const profileId = await getAuthenticatedProfileId();
 
   if (!client || !profileId) {
-    return fail<Partial<LoginProfile>>('auth_required', 'Sign in before updating your profile.', false);
+    return fail<Partial<LoginProfile>>('authRequired', 'Sign in before updating your profile.', false);
   }
 
   try {
     const { error } = await updateProfileById(client, profileId, input);
 
     if (error) {
-      return fail<Partial<LoginProfile>>('profile_update_failed', error.message ?? 'Could not update profile.', true);
+      return fail<Partial<LoginProfile>>('profileUpdateFailed', error.message ?? 'Could not update profile.', true);
     }
 
     return ok<Partial<LoginProfile>>(input);
   } catch {
-    return fail<Partial<LoginProfile>>('profile_update_failed', 'Could not update profile.', true);
+    return fail<Partial<LoginProfile>>('profileUpdateFailed', 'Could not update profile.', true);
   }
 }
 
 export function signInWithGoogle() {
-  return fail<AuthUser | null>('use_mobile_auth', 'Use the mobile auth adapter for Google sign-in.', false);
+  return fail<AuthUser | null>('useMobileAuth', 'Use the mobile auth adapter for Google sign-in.', false);
 }
 
 function mapLoginProfile(row: ProfileRow): LoginProfile {
-  const name = row.display_name ?? 'Hausy member';
+  const name = row.displayName ?? 'Hausy member';
 
   return {
     id: row.id,

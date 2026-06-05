@@ -13,27 +13,27 @@ import type {
 
 export type CreatorRow = {
   id: string;
-  profile_id: string;
+  profileId: string;
   handle: string;
-  display_name: string;
+  displayName: string;
   title: string;
   bio: string;
   philosophy: string | null;
-  community_tone: string | null;
+  communityTone: string | null;
   rating: number | string | null;
-  repeat_rate: number | string | null;
-  past_events: number | null;
-  recurring_attendees: number | null;
+  repeatRate: number | string | null;
+  pastEvents: number | null;
+  recurringAttendees: number | null;
   status: string;
 };
 
 export type CreatorCredentialRow = {
-  creator_id: string;
+  creatorId: string;
   label: string;
 };
 
 export type CreatorLinkRow = {
-  creator_id: string;
+  creatorId: string;
   label: string;
 };
 
@@ -47,13 +47,13 @@ export type VenueRow = {
 
 export type EventRow = {
   id: string;
-  creator_id: string;
-  venue_id: string;
+  creatorId: string;
+  venueId: string;
   title: string;
   category: string;
-  image_url: string | null;
-  poster_text: string | null;
-  price_label: string;
+  imageUrl: string | null;
+  posterText: string | null;
+  priceLabel: string;
   vibe: string;
   about: string;
   capacity: number;
@@ -62,33 +62,33 @@ export type EventRow = {
 
 export type EventSessionRow = {
   id: string;
-  event_id: string;
-  starts_at: string;
+  eventId: string;
+  startsAt: string;
   capacity: number;
 };
 
 export type EventCheckpointRow = {
   id: string;
-  event_id: string;
+  eventId: string;
   kind: string;
   label: string;
-  verified_at: string | null;
+  verifiedAt: string | null;
 };
 
 export type EventTagRow = {
-  event_id: string;
+  eventId: string;
   tag: string;
 };
 
 export type EventPromptRow = {
-  event_id: string;
+  eventId: string;
   prompt: string;
 };
 
 export type EventAttendeePreviewRow = {
   id: string;
-  event_id: string;
-  display_name: string;
+  eventId: string;
+  displayName: string;
   role: string;
   signal: string;
   status: string;
@@ -108,8 +108,8 @@ export function mapEventRow(input: {
   tags: EventTagRow[];
   venue: VenueRow;
 }): Event {
-  if (!input.event.image_url) {
-    throw new Error(`Event ${input.event.id} is missing image_url`);
+  if (!input.event.imageUrl) {
+    throw new Error(`Event ${input.event.id} is missing imageUrl`);
   }
 
   const session = input.session;
@@ -128,12 +128,12 @@ export function mapEventRow(input: {
       city: input.venue.city,
       status: normalizeVenueStatus(input.venue.status),
     },
-    dateLabel: session ? formatDateLabel(session.starts_at) : 'Date pending',
-    timeLabel: session ? formatTimeLabel(session.starts_at) : 'Time pending',
-    priceLabel: input.event.price_label,
+    dateLabel: session ? formatDateLabel(session.startsAt) : 'Date pending',
+    timeLabel: session ? formatTimeLabel(session.startsAt) : 'Time pending',
+    priceLabel: input.event.priceLabel,
     category: normalizeEventCategory(input.event.category),
-    image: input.event.image_url,
-    posterText: input.event.poster_text ?? input.event.title.toUpperCase(),
+    image: input.event.imageUrl,
+    posterText: input.event.posterText ?? input.event.title.toUpperCase(),
     organizer,
     attendees: input.attendeePreviews.map(mapAttendee),
     capacity: input.event.capacity,
@@ -156,9 +156,9 @@ export function mapHostProfile(
   return {
     ...organizer,
     philosophy: creator.philosophy ?? 'Clear expectations, small rooms, and a respectful crowd.',
-    communityTone: creator.community_tone ?? 'Creator-led and trust-first.',
-    pastEvents: creator.past_events ?? 0,
-    recurringAttendees: creator.recurring_attendees ?? 0,
+    communityTone: creator.communityTone ?? 'Creator-led and trust-first.',
+    pastEvents: creator.pastEvents ?? 0,
+    recurringAttendees: creator.recurringAttendees ?? 0,
     credentials: credentials.map((credential) => credential.label),
   };
 }
@@ -173,26 +173,26 @@ export function mapCreatorProfile(
     handle: creator.handle,
     status:
       creator.status === 'draft' ||
-      creator.status === 'in_review' ||
+      creator.status === 'inReview' ||
       creator.status === 'approved' ||
       creator.status === 'paused' ||
       creator.status === 'rejected'
         ? creator.status
         : 'draft',
-    userId: creator.profile_id,
+    userId: creator.profileId,
   };
 }
 
 function mapOrganizer(creator: CreatorRow, links: CreatorLinkRow[] = []): Organizer {
   return {
     id: creator.id,
-    name: creator.display_name,
+    name: creator.displayName,
     title: creator.title,
     bio: creator.bio,
     rating: formatRating(creator.rating),
-    repeatRate: formatPercent(creator.repeat_rate),
+    repeatRate: formatPercent(creator.repeatRate),
     links: links.map((link) => link.label),
-    initials: initialsFor(creator.display_name),
+    initials: initialsFor(creator.displayName),
     color: 'violet',
   };
 }
@@ -200,7 +200,7 @@ function mapOrganizer(creator: CreatorRow, links: CreatorLinkRow[] = []): Organi
 function mapAttendee(attendee: EventAttendeePreviewRow): Attendee {
   return {
     id: attendee.id,
-    name: attendee.display_name,
+    name: attendee.displayName,
     role: attendee.role,
     signal: attendee.signal,
     status: attendee.status === 'accepted' || attendee.status === 'confirmed' ? attendee.status : 'interested',
@@ -212,15 +212,15 @@ function mapAttendee(attendee: EventAttendeePreviewRow): Attendee {
 function mapCheckpoint(checkpoint: EventCheckpointRow): EventCheckpoint {
   return {
     id: checkpoint.id,
-    eventId: checkpoint.event_id,
+    eventId: checkpoint.eventId,
     kind:
-      checkpoint.kind === 'route_proof_added' ||
-      checkpoint.kind === 'guest_list_reviewed' ||
-      checkpoint.kind === 'creator_confirmed'
+      checkpoint.kind === 'routeProofAdded' ||
+      checkpoint.kind === 'guestListReviewed' ||
+      checkpoint.kind === 'creatorConfirmed'
         ? checkpoint.kind
-        : 'venue_verified',
+        : 'venueVerified',
     label: checkpoint.label,
-    verifiedAt: checkpoint.verified_at,
+    verifiedAt: checkpoint.verifiedAt,
   };
 }
 
@@ -235,7 +235,7 @@ function normalizeEventCategory(category: string): EventCategory {
 function normalizeEventStatus(status: string): EventStatus {
   if (
     status === 'draft' ||
-    status === 'in_review' ||
+    status === 'inReview' ||
     status === 'planning' ||
     status === 'confirmed' ||
     status === 'cancelled' ||

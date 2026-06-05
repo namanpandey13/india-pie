@@ -10,11 +10,11 @@ Status: Sprint 4 Supabase integration prep.
 
 - `packages/api/src/fixtures/dev-data/trust.ts`
   - Creator profiles, credentials, reviews, saved records, and extra checkpoints.
-  - Moved to `creators`, `creator_credentials`, `creator_links`, `reviews`, `event_checkpoints`, and `saved_events`.
+  - Moved to `creators`, `creatorCredentials`, `creatorLinks`, `reviews`, `eventCheckpoints`, and `savedEvents`.
 
 - `packages/api/src/fixtures/dev-data/chats.ts`
   - Plan Inbox thread/message examples.
-  - Moved to `plan_inbox_threads` and `plan_inbox_messages`.
+  - Moved to `planInboxThreads` and `planInboxMessages`.
 
 - `packages/api/src/fixtures/dev-data/profile.ts`
   - Demo user profile.
@@ -26,11 +26,11 @@ Status: Sprint 4 Supabase integration prep.
 
 - `packages/api/src/services/events.ts`
   - Removed hardcoded launch city and discovery tags.
-  - Discovery metadata now reads from `discovery_markets` and `discovery_tags`.
+  - Discovery metadata now reads from `discoveryMarkets` and `discoveryTags`.
 
 - `packages/api/src/services/host.ts`
   - Removed hardcoded creator starter templates.
-  - Creator Studio formats now read from `creator_templates`.
+  - Creator Studio formats now read from `creatorTemplates`.
 
 ## Still Static By Design
 
@@ -39,12 +39,12 @@ Status: Sprint 4 Supabase integration prep.
 
 ## New Supabase Content Surfaces
 
-- Public discovery: `events`, `event_sessions`, `venues`, `creators`, `event_tags`, `event_prompts`, `event_attendee_previews`, `event_checkpoints`.
-- Discovery taxonomy: `discovery_markets`, `discovery_tags`, `creator_templates`.
-- Trust: `creator_credentials`, `creator_links`, `reviews`.
-- User actions: `saved_events`, `rsvp_requests`.
-- Coordination: `plan_inbox_threads`, `plan_inbox_messages`.
-- Identity: `auth.users`, `profiles`, plus `handle_new_user()` trigger.
+- Public discovery: `events`, `eventSessions`, `venues`, `creators`, `eventTags`, `eventPrompts`, `eventAttendeePreviews`, `eventCheckpoints`.
+- Discovery taxonomy: `discoveryMarkets`, `discoveryTags`, `creatorTemplates`.
+- Trust: `creatorCredentials`, `creatorLinks`, `reviews`.
+- User actions: `savedEvents`, `rsvpRequests`.
+- Coordination: `planInboxThreads`, `planInboxMessages`.
+- Identity: `auth.users`, `profiles`, plus `handleNewUser()` trigger.
 
 ## Remaining Follow-Up
 

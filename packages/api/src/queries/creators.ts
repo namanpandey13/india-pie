@@ -2,7 +2,7 @@ import type { HausyApiClient } from '../client';
 import type { CreatorCredentialRow, CreatorLinkRow, CreatorRow } from '../services/event-mappers';
 
 const CREATOR_SELECT =
-  'id,profile_id,handle,display_name,title,bio,philosophy,community_tone,rating,repeat_rate,past_events,recurring_attendees,status';
+  'id,profileId,handle,displayName,title,bio,philosophy,communityTone,rating,repeatRate,pastEvents,recurringAttendees,status';
 
 export type CreatorTemplateRow = {
   label: string;
@@ -14,7 +14,7 @@ export type CreatorIdRow = {
 
 export function selectActiveCreatorTemplates(client: HausyApiClient) {
   return client
-    .from<CreatorTemplateRow[]>('creator_templates')
+    .from<CreatorTemplateRow[]>('creatorTemplates')
     .select('label')
     .eq('active', true)
     .order('position', { ascending: true });
@@ -25,11 +25,11 @@ export function selectCreatorById(client: HausyApiClient, creatorId: string) {
 }
 
 export function selectCreatorLinksByCreatorId(client: HausyApiClient, creatorId: string) {
-  return client.from<CreatorLinkRow[]>('creator_links').select('creator_id,label').eq('creator_id', creatorId);
+  return client.from<CreatorLinkRow[]>('creatorLinks').select('creatorId,label').eq('creatorId', creatorId);
 }
 
 export function selectCreatorCredentialsByCreatorId(client: HausyApiClient, creatorId: string) {
-  return client.from<CreatorCredentialRow[]>('creator_credentials').select('creator_id,label').eq('creator_id', creatorId);
+  return client.from<CreatorCredentialRow[]>('creatorCredentials').select('creatorId,label').eq('creatorId', creatorId);
 }
 
 export function selectCreatorSpotlightIds(client: HausyApiClient) {
