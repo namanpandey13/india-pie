@@ -19,11 +19,15 @@ type AppState = {
   followedHosts: string[];
   colorScheme: ColorSchemeName;
   hostDraft: {
+    about: string;
     capacity: string;
     lastSavedAt?: string;
+    location: string;
+    startsAt: string;
     submittedForReview: boolean;
     template: string;
     title: string;
+    vibe: string;
     visibility: HostVisibility;
   };
   reflections: Record<string, string>;
@@ -57,10 +61,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   followedHosts: [],
   colorScheme: 'light',
   hostDraft: {
+    about: '',
     capacity: '14',
+    location: 'Delhi NCR',
+    startsAt: '',
     submittedForReview: false,
     template: '',
     title: '',
+    vibe: '',
     visibility: 'curated',
   },
   reflections: {},

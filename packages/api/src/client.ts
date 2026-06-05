@@ -29,6 +29,7 @@ export type SupabaseQueryBuilder<T = unknown> = {
   delete(): SupabaseQueryBuilder<T>;
   eq(column: string, value: unknown): SupabaseQueryBuilder<T>;
   in(column: string, values: readonly unknown[]): SupabaseQueryBuilder<T>;
+  is(column: string, value: unknown): SupabaseQueryBuilder<T>;
   order(column: string, options?: Record<string, unknown>): SupabaseQueryBuilder<T>;
   limit(count: number): SupabaseQueryBuilder<T>;
   single(): Promise<SupabaseQueryResult<T>>;
@@ -97,6 +98,11 @@ class QueryBuilder<T = unknown> implements SupabaseQueryBuilder<T> {
 
   in(column: string, values: readonly unknown[]): SupabaseQueryBuilder<T> {
     this.query = this.query.in(column, Array.from(values));
+    return this;
+  }
+
+  is(column: string, value: unknown): SupabaseQueryBuilder<T> {
+    this.query = this.query.is(column, value);
     return this;
   }
 

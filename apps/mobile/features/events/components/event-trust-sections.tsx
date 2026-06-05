@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { eventStatusLabel, type Event, type EventCheckpoint, type HostProfile, type Review } from '@hausy/types';
+import { eventStatusLabel, rsvpStatusLabel, type Event, type EventCheckpoint, type HostProfile, type Review } from '@hausy/types';
 import {
   ActionBar,
   Avatar,
@@ -165,6 +165,7 @@ export function RsvpActionPanel({
   event,
   onCancel,
   requested,
+  status,
   onRequest,
   onUpdateDraft,
 }: {
@@ -173,6 +174,7 @@ export function RsvpActionPanel({
   event: Event;
   onCancel: () => void;
   requested: boolean;
+  status?: keyof typeof rsvpStatusLabel | 'draft';
   onRequest: () => void;
   onUpdateDraft: (patch: Partial<RsvpDraft>) => void;
 }) {
@@ -222,7 +224,7 @@ export function RsvpActionPanel({
 
       <ActionBar>
         <PrimaryButton
-          label={requested ? 'Request sent' : 'Request to join'}
+          label={requested ? rsvpStatusLabel[status === 'draft' || !status ? 'requested' : status] : 'Request to join'}
           icon={requested ? 'checkmark-circle-outline' : 'send-outline'}
           onPress={ready ? onRequest : undefined}
         />

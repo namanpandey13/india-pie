@@ -4,6 +4,7 @@ import {
   type RsvpRequestRow,
   insertRsvpRequest,
   selectActiveRsvpsForEvent,
+  selectRsvpsForProfile,
   updateRsvpRequestCancelled,
 } from '../queries/rsvp';
 import { fail, ok } from '../result';
@@ -62,6 +63,27 @@ export async function cancelRsvpRequest(id: string) {
     return ok<RsvpRequest>(mapRsvp(data));
   } catch {
     return fail<RsvpRequest>('rsvpCancelFailed', 'Could not cancel this RSVP request.', true);
+  }
+}
+
+export async function listMyRsvpRequests() {
+  const client = getApiClient();
+  const profileId = await getAuthenticatedProfileId();
+
+  if (!client || !profileId) {
+    return fail<RsvpRequest[]>('authRequired', 'Sign in to view your requests.', false);
+  }
+
+  try {
+    const { data, error } = await selectRsvpsForProfile(client, profileId);
+
+    if (error) {
+      return fail<RsvpRequest[]>('rsvpsUnavailable', error.message ?? 'Could not load your requests.', true);
+    }
+
+    return ok<RsvpRequest[]>((data ?? []).map(mapRsvp));
+  } catch {
+    return fail<RsvpRequest[]>('rsvpsUnavailable', 'Could not load your requests.', true);
   }
 }
 

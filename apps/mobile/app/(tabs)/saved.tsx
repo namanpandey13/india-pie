@@ -11,12 +11,14 @@ import {
   typographyRoles,
   useThemeColors,
 } from '@hausy/ui';
+import { rsvpStatusLabel } from '@hausy/types';
 
 import { useSavedEvents } from '@/features/saved/use-saved-events';
 
 export default function SavedScreen() {
   const colors = useThemeColors();
-  const { error, isLoading, savedEvents, toggleSaved } = useSavedEvents();
+  const { error, isLoading, rsvps, savedEvents, toggleSaved } = useSavedEvents();
+  const rsvpByEventId = new Map(rsvps.map((rsvp) => [rsvp.eventId, rsvp]));
 
   return (
     <Screen>
@@ -44,13 +46,19 @@ export default function SavedScreen() {
         ) : null}
 
         {savedEvents.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            saved
-            onPress={() => router.push({ pathname: '/event/[id]', params: { id: event.id } })}
-            onSave={() => toggleSaved(event.id)}
-          />
+          <View key={event.id} style={styles.eventShell}>
+            <EventCard
+              event={event}
+              saved
+              onPress={() => router.push({ pathname: '/event/[id]', params: { id: event.id } })}
+              onSave={() => toggleSaved(event.id)}
+            />
+            {rsvpByEventId.get(event.id) ? (
+              <Text style={[styles.statusPill, { backgroundColor: colors.surfaceAlt, color: colors.ink }]}>
+                Entry {rsvpStatusLabel[rsvpByEventId.get(event.id)!.status]}
+              </Text>
+            ) : null}
+          </View>
         ))}
         {!isLoading && !error && savedEvents.length === 0 ? (
           <Card style={styles.emptyCard}>
@@ -76,5 +84,15 @@ const styles = StyleSheet.create({
   },
   emptyBody: {
     ...typographyRoles.body,
+  },
+  eventShell: {
+    gap: 8,
+  },
+  statusPill: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    ...typographyRoles.caption,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
 });

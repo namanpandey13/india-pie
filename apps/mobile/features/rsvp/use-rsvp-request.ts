@@ -1,6 +1,6 @@
-import { cancelRsvpRequest, createRsvpRequest } from '@hausy/api';
+import { cancelRsvpRequest, createRsvpRequest, listMyRsvpRequests } from '@hausy/api';
 import { logAppEvent } from '@hausy/utils';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAppStore } from '@/state/app-store';
 
@@ -11,7 +11,12 @@ export function useRsvpRequest(eventId: string) {
   const updateRsvpDraft = useAppStore((state) => state.updateRsvpDraft);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const requested = draft?.status === 'requested';
+  const rsvpsQuery = useQuery({
+    queryKey: ['my-rsvps'],
+    queryFn: listMyRsvpRequests,
+  });
+  const remoteRequest = (rsvpsQuery.data?.data ?? []).find((rsvp) => rsvp.eventId === eventId);
+  const requested = Boolean(remoteRequest && remoteRequest.status !== 'cancelled' && remoteRequest.status !== 'declined') || draft?.status === 'requested';
   const requestMutation = useMutation({
     mutationFn: () =>
       createRsvpRequest({
@@ -29,6 +34,7 @@ export function useRsvpRequest(eventId: string) {
       updateRsvpDraft(eventId, { requestId: request.data.id });
       submitRsvp(eventId);
       queryClient.invalidateQueries({ queryKey: ['plan-inbox-threads'] });
+      queryClient.invalidateQueries({ queryKey: ['my-rsvps'] });
     },
     onError: (caughtError) => {
       logAppEvent('error', 'rsvp.request.unexpected', caughtError);
@@ -40,6 +46,7 @@ export function useRsvpRequest(eventId: string) {
     onSettled: () => {
       cancelRsvp(eventId);
       queryClient.invalidateQueries({ queryKey: ['plan-inbox-threads'] });
+      queryClient.invalidateQueries({ queryKey: ['my-rsvps'] });
     },
   });
 
@@ -53,6 +60,7 @@ export function useRsvpRequest(eventId: string) {
     error,
     requestToJoin,
     requested,
+    status: remoteRequest?.status ?? draft?.status ?? 'draft',
     updateDraft: (patch: Parameters<typeof updateRsvpDraft>[1]) => updateRsvpDraft(eventId, patch),
   };
 }

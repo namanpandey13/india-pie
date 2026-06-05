@@ -32,3 +32,10 @@ export function updateProfileById(client: HausyApiClient, profileId: string, inp
     })
     .eq('id', profileId);
 }
+
+export function selectProfilesByIds(client: HausyApiClient, profileIds: string[]) {
+  return client
+    .from<ProfileRow[]>('profiles')
+    .select('id,displayName,handle,avatarUrl,city,bio,instagram,linkedin')
+    .in('id', profileIds);
+}

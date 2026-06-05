@@ -67,3 +67,95 @@ export function selectCreatorLinksByCreatorIds(client: HausyApiClient, creatorId
 export function selectCreatorCredentialsByCreatorIds(client: HausyApiClient, creatorIds: string[]) {
   return client.from<CreatorCredentialRow[]>('creatorCredentials').select('creatorId,label').in('creatorId', creatorIds);
 }
+
+export type VenueInsertRow = {
+  id: string;
+};
+
+export type EventInsertRow = {
+  id: string;
+  creatorId: string;
+  status: string;
+  title: string;
+};
+
+export type PlanThreadInsertRow = {
+  id: string;
+  eventId: string | null;
+  title: string;
+};
+
+export function insertVenue(client: HausyApiClient, input: {
+  city: string;
+  createdBy: string;
+  locality: string;
+  name: string;
+}) {
+  return client
+    .from<VenueInsertRow>('venues')
+    .insert({
+      addressLine: input.locality,
+      city: input.city,
+      createdBy: input.createdBy,
+      locality: input.locality,
+      name: input.name,
+      status: 'unverified',
+    })
+    .select('id')
+    .single();
+}
+
+export function insertEvent(client: HausyApiClient, input: {
+  about: string;
+  capacity: number;
+  category: string;
+  creatorId: string;
+  imageUrl: string;
+  posterText: string;
+  priceLabel: string;
+  status: string;
+  title: string;
+  venueId: string;
+  vibe: string;
+}) {
+  return client
+    .from<EventInsertRow>('events')
+    .insert(input)
+    .select('id,creatorId,status,title')
+    .single();
+}
+
+export function insertEventSession(client: HausyApiClient, input: {
+  capacity: number;
+  eventId: string;
+  startsAt: string;
+}) {
+  return client
+    .from<EventSessionRow>('eventSessions')
+    .insert(input)
+    .select('id,eventId,startsAt,capacity')
+    .single();
+}
+
+export function insertEventPrompts(client: HausyApiClient, eventId: string, prompts: string[]) {
+  return client.from('eventPrompts').insert(prompts.map((prompt, index) => ({ eventId, position: index + 1, prompt })));
+}
+
+export function insertEventTags(client: HausyApiClient, eventId: string, tags: string[]) {
+  return client.from('eventTags').insert(tags.map((tag) => ({ eventId, tag })));
+}
+
+export function insertPlanInboxThread(client: HausyApiClient, input: {
+  eventId: string;
+  title: string;
+}) {
+  return client.from<PlanThreadInsertRow>('planInboxThreads').insert(input).select('id,eventId,title').single();
+}
+
+export function selectEventsByCreatorId(client: HausyApiClient, creatorId: string) {
+  return client.from<EventRow[]>('events').select(EVENT_SELECT).eq('creatorId', creatorId).order('createdAt', { ascending: false });
+}
+
+export function updateEventStatusById(client: HausyApiClient, eventId: string, status: string) {
+  return client.from<EventRow>('events').update({ status }).eq('id', eventId).select(EVENT_SELECT).single();
+}

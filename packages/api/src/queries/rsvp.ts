@@ -54,3 +54,23 @@ export function updateRsvpRequestCancelled(client: HausyApiClient, profileId: st
     .select(RSVP_SELECT)
     .single();
 }
+
+export function selectRsvpsForProfile(client: HausyApiClient, profileId: string) {
+  return client
+    .from<RsvpRequestRow[]>('rsvpRequests')
+    .select(RSVP_SELECT)
+    .eq('profileId', profileId)
+    .order('createdAt', { ascending: false });
+}
+
+export function selectRsvpsForEventIds(client: HausyApiClient, eventIds: string[]) {
+  return client
+    .from<RsvpRequestRow[]>('rsvpRequests')
+    .select(RSVP_SELECT)
+    .in('eventId', eventIds)
+    .order('createdAt', { ascending: false });
+}
+
+export function updateRsvpStatusById(client: HausyApiClient, id: string, status: string) {
+  return client.from<RsvpRequestRow>('rsvpRequests').update({ status }).eq('id', id).select(RSVP_SELECT).single();
+}

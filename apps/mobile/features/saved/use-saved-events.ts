@@ -1,4 +1,4 @@
-import { listEvents, listSavedEvents, toggleSavedEvent } from '@hausy/api';
+import { listEvents, listMyRsvpRequests, listSavedEvents, toggleSavedEvent } from '@hausy/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useAppStore } from '@/state/app-store';
@@ -15,6 +15,10 @@ export function useSavedEvents() {
     queryKey: ['events'],
     queryFn: () => listEvents(),
   });
+  const rsvpsQuery = useQuery({
+    queryKey: ['my-rsvps'],
+    queryFn: listMyRsvpRequests,
+  });
   const toggleSaved = useMutation({
     mutationFn: (eventId: string) => toggleSavedEvent(eventId, false),
     onSuccess: () => {
@@ -24,15 +28,16 @@ export function useSavedEvents() {
   });
   const savedEvents = useMemo(() => {
     const byId = new Map((savedQuery.data?.data ?? []).map((event) => [event.id, event]));
+    const requestedIds = new Set((rsvpsQuery.data?.data ?? []).map((rsvp) => rsvp.eventId));
 
     for (const event of eventsQuery.data?.data ?? []) {
-      if (localSavedIds.includes(event.id)) {
+      if (localSavedIds.includes(event.id) || requestedIds.has(event.id)) {
         byId.set(event.id, event);
       }
     }
 
     return [...byId.values()];
-  }, [eventsQuery.data, localSavedIds, savedQuery.data]);
+  }, [eventsQuery.data, localSavedIds, rsvpsQuery.data, savedQuery.data]);
 
   function removeSaved(eventId: string) {
     if (localSavedIds.includes(eventId)) {
@@ -43,8 +48,9 @@ export function useSavedEvents() {
   }
 
   return {
-    error: savedQuery.data?.error ?? eventsQuery.data?.error ?? null,
-    isLoading: savedQuery.isLoading || eventsQuery.isLoading,
+    error: savedQuery.data?.error ?? eventsQuery.data?.error ?? rsvpsQuery.data?.error ?? null,
+    isLoading: savedQuery.isLoading || eventsQuery.isLoading || rsvpsQuery.isLoading,
+    rsvps: rsvpsQuery.data?.data ?? [],
     savedEvents,
     toggleSaved: removeSaved,
   };

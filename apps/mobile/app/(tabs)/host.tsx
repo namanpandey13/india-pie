@@ -14,23 +14,38 @@ import {
   typographyRoles,
   useThemeColors,
 } from '@hausy/ui';
+import { eventStatusLabel, rsvpStatusLabel } from '@hausy/types';
 import { useHostDraft } from '@/features/host/use-host-draft';
 
 export default function HostScreen() {
   const colors = useThemeColors();
   const {
+    about,
     capacity,
     draft,
+    error,
+    events,
     hostDraft,
+    isPublishing,
+    location,
+    publishHostDraft,
+    requests,
+    reviewRequest,
     saveHostDraft,
+    setAbout,
     setCapacity,
+    setEventStatus,
+    setLocation,
+    setStartsAt,
     setTemplate,
     setTitle,
+    setVibe,
     setVisibility,
-    submitHostDraftForReview,
+    startsAt,
     template,
     templates,
     title,
+    vibe,
     visibility,
   } = useHostDraft();
 
@@ -42,8 +57,8 @@ export default function HostScreen() {
         <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
         <Header
           eyebrow="creator studio"
-          title="Create offline plans like a trusted creator."
-          subtitle="Submit a plan with venue proof, guest fit, and creator accountability. Hausy reviews plans before they enter planning."
+          title="Host, approve, and announce from one place."
+          subtitle="Post a plan instantly, review guest requests, confirm the event, and keep updates in Hausy chat."
         />
 
         <SectionTitle title="Start with a format" />
@@ -72,7 +87,13 @@ export default function HostScreen() {
           <Text style={[styles.label, { color: colors.faint }]}>Where</Text>
           <View style={[styles.inputRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
             <Ionicons name="location-outline" size={20} color={colors.brand} />
-            <Text style={[styles.inputStatic, { color: colors.ink }]}>Choose or propose a venue</Text>
+            <TextInput
+              value={location}
+              onChangeText={setLocation}
+              placeholder="Venue or locality"
+              placeholderTextColor={colors.faint}
+              style={[styles.inputInline, { color: colors.ink }]}
+            />
           </View>
 
           <View style={styles.twoCol}>
@@ -80,7 +101,13 @@ export default function HostScreen() {
               <Text style={[styles.label, { color: colors.faint }]}>When</Text>
               <View style={[styles.inputRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
                 <Ionicons name="time-outline" size={18} color={colors.brand} />
-                <Text style={[styles.inputStatic, { color: colors.ink }]}>Add event session</Text>
+                <TextInput
+                  value={startsAt}
+                  onChangeText={setStartsAt}
+                  placeholder="2026-06-12 19:30"
+                  placeholderTextColor={colors.faint}
+                  style={[styles.inputInline, { color: colors.ink }]}
+                />
               </View>
             </View>
             <View style={styles.fieldHalf}>
@@ -93,6 +120,25 @@ export default function HostScreen() {
               />
             </View>
           </View>
+
+          <Text style={[styles.label, { color: colors.faint }]}>Vibe</Text>
+          <TextInput
+            value={vibe}
+            onChangeText={setVibe}
+            placeholder="Curated dinner, no pitch night"
+            placeholderTextColor={colors.faint}
+            style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
+          />
+
+          <Text style={[styles.label, { color: colors.faint }]}>About</Text>
+          <TextInput
+            value={about}
+            onChangeText={setAbout}
+            multiline
+            placeholder="What happens, who it is for, and why guests should request entry."
+            placeholderTextColor={colors.faint}
+            style={[styles.textArea, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
+          />
         </Card>
 
         <SectionTitle title="Guest list control" action="Trust layer" />
@@ -117,7 +163,7 @@ export default function HostScreen() {
           />
         </Card>
 
-        <SectionTitle title="Creator follow-through" action="Review required" />
+        <SectionTitle title="Creator follow-through" action="Self-serve" />
         <Card style={styles.promptCard}>
           <Checklist label="Confirm venue before review" done />
           <Checklist label="Share route or table proof before event" done />
@@ -134,11 +180,17 @@ export default function HostScreen() {
         </Card>
 
         {hostDraft.lastSavedAt ? <Text style={[styles.savedStatus, { color: colors.brand }]}>{hostDraft.lastSavedAt}</Text> : null}
+        {error ? (
+          <Card style={styles.previewCard}>
+            <Text style={[styles.previewTitle, { color: colors.ink }]}>Host action failed</Text>
+            <Text style={[styles.previewBody, { color: colors.muted }]}>{error.message}</Text>
+          </Card>
+        ) : null}
         {hostDraft.submittedForReview ? (
           <Card style={styles.previewCard}>
             <Text style={[styles.previewTitle, { color: colors.ink }]}>{title}</Text>
             <Text style={[styles.previewBody, { color: colors.muted }]}>
-              {template} - {visibility} - {capacity} guests. The plan is in review before it can move to planning.
+              {template} - {visibility} - {capacity} guests. Ready to post as a planning event.
             </Text>
           </Card>
         ) : null}
@@ -148,7 +200,56 @@ export default function HostScreen() {
           tone="blue"
           onPress={saveHostDraft}
         />
-        <PrimaryButton label="Submit for review" icon="send-outline" onPress={submitHostDraftForReview} />
+        <PrimaryButton label={isPublishing ? 'Posting plan...' : 'Post event'} icon="send-outline" onPress={publishHostDraft} />
+
+        <SectionTitle title="Guest requests" action={`${requests.length}`} />
+        <View style={styles.stackGap}>
+          {requests.map((request) => (
+            <Card key={request.id} style={styles.requestCard}>
+              <View style={styles.requestTop}>
+                <View style={styles.requestAvatar}>
+                  <Text style={[styles.requestInitials, { color: colors.ink }]}>{request.guestInitials ?? 'HG'}</Text>
+                </View>
+                <View style={styles.requestCopy}>
+                  <Text style={[styles.previewTitle, { color: colors.ink }]}>{request.guestName}</Text>
+                  <Text style={[styles.previewBody, { color: colors.muted }]}>{request.eventTitle}</Text>
+                </View>
+                <Text style={[styles.statusText, { color: colors.brand }]}>{rsvpStatusLabel[request.status]}</Text>
+              </View>
+              <Text style={[styles.previewBody, { color: colors.ink }]}>{request.note ?? 'No note yet.'}</Text>
+              <Text style={[styles.previewBody, { color: colors.muted }]}>
+                {request.guestCity ?? 'City missing'} - {request.guestBio ?? 'Profile bio missing'}
+              </Text>
+              <View style={styles.actionRow}>
+                <GhostButton label="Reject" icon="close-circle-outline" onPress={() => reviewRequest(request.id, 'declined')} />
+                <PrimaryButton label="Accept" icon="checkmark-circle-outline" onPress={() => reviewRequest(request.id, 'accepted')} />
+              </View>
+            </Card>
+          ))}
+          {requests.length === 0 ? (
+            <Card style={styles.previewCard}>
+              <Text style={[styles.previewTitle, { color: colors.ink }]}>No guest requests yet.</Text>
+              <Text style={[styles.previewBody, { color: colors.muted }]}>Requests appear here as soon as guests request entry.</Text>
+            </Card>
+          ) : null}
+        </View>
+
+        <SectionTitle title="Your hosted events" action={`${events.length}`} />
+        <View style={styles.stackGap}>
+          {events.map((event) => (
+            <Card key={event.id} style={styles.previewCard}>
+              <Text style={[styles.previewTitle, { color: colors.ink }]}>{event.title}</Text>
+              <Text style={[styles.previewBody, { color: colors.muted }]}>
+                {eventStatusLabel[event.status]} - {event.requestCount} requests - {event.acceptedCount} accepted
+              </Text>
+              <View style={styles.actionRow}>
+                <GhostButton label="Planning" icon="time-outline" onPress={() => setEventStatus(event.id, 'planning')} />
+                <GhostButton label="Confirmed" icon="checkmark-circle-outline" onPress={() => setEventStatus(event.id, 'confirmed')} />
+                <GhostButton label="Cancel" icon="close-circle-outline" onPress={() => setEventStatus(event.id, 'cancelled')} />
+              </View>
+            </Card>
+          ))}
+        </View>
       </Screen>
     </KeyboardAvoidingView>
   );
@@ -234,6 +335,21 @@ const styles = StyleSheet.create({
     flex: 1,
     ...typographyRoles.bodyStrong,
   },
+  inputInline: {
+    flex: 1,
+    ...typographyRoles.bodyStrong,
+    minHeight: 44,
+    minWidth: 0,
+    paddingVertical: 0,
+  },
+  textArea: {
+    borderRadius: 14,
+    borderWidth: 1,
+    ...typographyRoles.bodyStrong,
+    minHeight: 104,
+    padding: 12,
+    textAlignVertical: 'top',
+  },
   twoCol: {
     flexDirection: 'row',
     gap: 10,
@@ -292,5 +408,40 @@ const styles = StyleSheet.create({
   },
   previewBody: {
     ...typographyRoles.body,
+  },
+  stackGap: {
+    gap: 12,
+  },
+  requestCard: {
+    gap: 12,
+  },
+  requestTop: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  requestAvatar: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 999,
+    height: 42,
+    justifyContent: 'center',
+    width: 42,
+  },
+  requestInitials: {
+    ...typographyRoles.caption,
+  },
+  requestCopy: {
+    flex: 1,
+    gap: 2,
+    minWidth: 0,
+  },
+  statusText: {
+    ...typographyRoles.caption,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
 });

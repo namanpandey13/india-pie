@@ -48,7 +48,7 @@ function ProtectedEventDetailScreen() {
     saved,
     toggleSaved,
   } = useEventDetail(id);
-  const { cancelRsvp, draft, error, requestToJoin, requested, updateDraft } = useRsvpRequest(event?.id ?? '');
+  const { cancelRsvp, draft, error, requestToJoin, requested, status, updateDraft } = useRsvpRequest(event?.id ?? '');
 
   if (!event) {
     return (
@@ -96,6 +96,7 @@ function ProtectedEventDetailScreen() {
             error={error}
             event={event}
             requested={requested}
+            status={status}
             onCancel={cancelRsvp}
             onRequest={requestToJoin}
             onUpdateDraft={updateDraft}

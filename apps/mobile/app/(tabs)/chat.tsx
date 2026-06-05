@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { sendPlanInboxMessage } from '@hausy/api';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { listMyTickets, sendPlanInboxMessage } from '@hausy/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Card, Header, Screen, SectionTitle, TopBar, typographyRoles, useThemeColors } from '@hausy/ui';
@@ -11,18 +11,23 @@ import { useAppStore } from '@/state/app-store';
 export default function ChatScreen() {
   const colors = useThemeColors();
   const { error, isLoading, threads } = useChatOverview();
+  const ticketsQuery = useQuery({
+    queryKey: ['tickets'],
+    queryFn: listMyTickets,
+  });
+  const tickets = ticketsQuery.data?.data ?? [];
   const queryClient = useQueryClient();
   const chatDrafts = useAppStore((state) => state.chatDrafts);
   const setChatDraft = useAppStore((state) => state.setChatDraft);
   const sendMutation = useMutation({
-    mutationFn: (threadId: string) =>
+    mutationFn: ({ kind, threadId }: { kind: 'message' | 'hostUpdate'; threadId: string }) =>
       sendPlanInboxMessage({
         authorId: '',
         body: chatDrafts[threadId] ?? '',
-        kind: 'message',
+        kind,
         threadId,
       }),
-    onSuccess: (_result, threadId) => {
+    onSuccess: (_result, { threadId }) => {
       setChatDraft(threadId, '');
       queryClient.invalidateQueries({ queryKey: ['plan-inbox-threads'] });
     },
@@ -38,6 +43,23 @@ export default function ChatScreen() {
       />
 
       <SectionTitle title="Plan threads" action={`${threads.length} active`} />
+      {tickets.length ? (
+        <>
+          <SectionTitle title="Tickets" action={`${tickets.length}`} />
+          {tickets.map((ticket) => (
+            <Card key={ticket.id} style={styles.ticketCard}>
+              <View style={styles.chatTop}>
+                <Ionicons name="ticket-outline" size={24} color={colors.brand} />
+                <View style={styles.chatCopy}>
+                  <Text style={[styles.chatTitle, { color: colors.ink }]}>{ticket.eventTitle}</Text>
+                  <Text style={[styles.chatMeta, { color: colors.muted }]}>Entry code</Text>
+                </View>
+              </View>
+              <Text style={[styles.ticketCode, { color: colors.ink }]}>{ticket.ticketCode}</Text>
+            </Card>
+          ))}
+        </>
+      ) : null}
       {isLoading ? (
         <Card style={styles.chatCard}>
           <Text style={[styles.chatTitle, { color: colors.ink }]}>Loading plan inbox.</Text>
@@ -78,7 +100,7 @@ export default function ChatScreen() {
               <Pressable
                 onPress={() => {
                   if (chatDrafts[thread.id]?.trim()) {
-                    sendMutation.mutate(thread.id);
+                    sendMutation.mutate({ kind: 'message', threadId: thread.id });
                   }
                 }}
                 hitSlop={8}
@@ -86,6 +108,18 @@ export default function ChatScreen() {
                 <Ionicons name="send" size={18} color={colors.brand} />
               </Pressable>
             </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                if (chatDrafts[thread.id]?.trim()) {
+                  sendMutation.mutate({ kind: 'hostUpdate', threadId: thread.id });
+                }
+              }}
+              style={[styles.announceButton, { borderColor: colors.line }]}
+            >
+              <Ionicons name="megaphone-outline" size={17} color={colors.brand} />
+              <Text style={[styles.announceText, { color: colors.ink }]}>Post as announcement</Text>
+            </Pressable>
           </Card>
         ))}
 
@@ -102,6 +136,13 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   chatCard: {
     gap: 14,
+  },
+  ticketCard: {
+    gap: 12,
+  },
+  ticketCode: {
+    ...typographyRoles.h2,
+    letterSpacing: 0,
   },
   chatTop: {
     alignItems: 'center',
@@ -162,6 +203,19 @@ const styles = StyleSheet.create({
     flex: 1,
     ...typographyRoles.bodyStrong,
     minHeight: 44,
+  },
+  announceButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  announceText: {
+    ...typographyRoles.caption,
   },
   sentMessage: {
     alignSelf: 'flex-end',

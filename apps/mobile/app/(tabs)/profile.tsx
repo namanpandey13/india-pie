@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import {
   Avatar,
@@ -20,11 +21,30 @@ import { useAppStore } from '@/state/app-store';
 export default function ProfileScreen() {
   const loginProfile = useProfile();
   const profile = loginProfile.data?.data;
+  const [draft, setDraft] = useState({
+    city: '',
+    instagram: '',
+    intent: '',
+    linkedin: '',
+    name: '',
+  });
   const colors = useThemeColors();
   const comfortSettings = useAppStore((state) => state.comfortSettings);
   const colorScheme = useAppStore((state) => state.colorScheme);
   const setColorScheme = useAppStore((state) => state.setColorScheme);
   const setComfortSetting = useAppStore((state) => state.setComfortSetting);
+
+  useEffect(() => {
+    if (profile) {
+      setDraft({
+        city: profile.city,
+        instagram: profile.instagram,
+        intent: profile.intent,
+        linkedin: profile.linkedin,
+        name: profile.name,
+      });
+    }
+  }, [profile]);
 
   return (
     <Screen>
@@ -46,6 +66,26 @@ export default function ProfileScreen() {
         <Text style={[styles.intent, { color: colors.ink }]}>
           Add social proof, creator interests, and comfort settings before requesting offline plans.
         </Text>
+      </Card>
+
+      <SectionTitle title="Edit profile" action={loginProfile.saving ? 'Saving' : 'Live'} />
+      <Card style={styles.editCard}>
+        <ProfileInput label="Name" value={draft.name} onChangeText={(name) => setDraft((state) => ({ ...state, name }))} />
+        <ProfileInput label="City" value={draft.city} onChangeText={(city) => setDraft((state) => ({ ...state, city }))} />
+        <ProfileInput label="Instagram" value={draft.instagram} onChangeText={(instagram) => setDraft((state) => ({ ...state, instagram }))} />
+        <ProfileInput label="LinkedIn" value={draft.linkedin} onChangeText={(linkedin) => setDraft((state) => ({ ...state, linkedin }))} />
+        <TextInput
+          value={draft.intent}
+          onChangeText={(intent) => setDraft((state) => ({ ...state, intent }))}
+          multiline
+          placeholder="What should hosts and guests know about you?"
+          placeholderTextColor={colors.faint}
+          style={[styles.textArea, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
+        />
+        {loginProfile.saveResult?.error ? (
+          <Text style={[styles.errorText, { color: colors.brand }]}>{loginProfile.saveResult.error.message}</Text>
+        ) : null}
+        <GhostButton label="Save profile" icon="checkmark-circle-outline" onPress={() => loginProfile.saveProfile(draft)} />
       </Card>
 
       <View style={styles.metricsRow}>
@@ -94,6 +134,23 @@ export default function ProfileScreen() {
         />
       </Card>
     </Screen>
+  );
+}
+
+function ProfileInput({ label, value, onChangeText }: { label: string; value: string; onChangeText: (value: string) => void }) {
+  const colors = useThemeColors();
+
+  return (
+    <View style={styles.inputGroup}>
+      <Text style={[styles.inputLabel, { color: colors.faint }]}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={label}
+        placeholderTextColor={colors.faint}
+        style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
+      />
+    </View>
   );
 }
 
@@ -174,6 +231,33 @@ const styles = StyleSheet.create({
   },
   settingsCard: {
     gap: 12,
+  },
+  editCard: {
+    gap: 12,
+  },
+  inputGroup: {
+    gap: 6,
+  },
+  inputLabel: {
+    ...typographyRoles.caption,
+  },
+  input: {
+    borderRadius: 14,
+    borderWidth: 1,
+    ...typographyRoles.bodyStrong,
+    minHeight: 46,
+    paddingHorizontal: 12,
+  },
+  textArea: {
+    borderRadius: 14,
+    borderWidth: 1,
+    ...typographyRoles.bodyStrong,
+    minHeight: 96,
+    padding: 12,
+    textAlignVertical: 'top',
+  },
+  errorText: {
+    ...typographyRoles.caption,
   },
   setting: {
     alignItems: 'center',

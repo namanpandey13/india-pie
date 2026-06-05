@@ -244,11 +244,38 @@ export const rsvpRequestSchema = z.object({
   id: z.string(),
   userId: z.string(),
   eventId: z.string(),
+  guestName: z.string().optional(),
+  guestInitials: z.string().optional(),
+  guestCity: z.string().optional(),
+  guestBio: z.string().optional(),
+  guestInstagram: z.string().optional(),
+  guestLinkedin: z.string().optional(),
   sessionId: z.string().optional(),
   status: rsvpStatusSchema,
   note: z.string().optional(),
 });
 export type RsvpRequest = z.infer<typeof rsvpRequestSchema>;
+
+export const eventTicketSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  eventTitle: z.string(),
+  status: z.enum(['active', 'cancelled', 'used']),
+  ticketCode: z.string(),
+  issuedAt: z.string(),
+});
+export type EventTicket = z.infer<typeof eventTicketSchema>;
+
+export const appNotificationSchema = z.object({
+  id: z.string(),
+  eventId: z.string().nullable(),
+  title: z.string(),
+  body: z.string(),
+  kind: z.enum(['rsvpAccepted', 'rsvpDeclined', 'eventConfirmed', 'eventCancelled', 'announcement', 'ticketIssued']),
+  createdAt: z.string(),
+  readAt: z.string().nullable(),
+});
+export type AppNotification = z.infer<typeof appNotificationSchema>;
 
 export const eventInterestSchema = z.object({
   userId: z.string(),
@@ -323,6 +350,10 @@ export const hostDraftSchema = z.object({
   template: z.string(),
   title: z.string(),
   capacity: z.string(),
+  location: z.string().optional(),
+  startsAt: z.string().optional(),
+  vibe: z.string().optional(),
+  about: z.string().optional(),
   visibility: hostVisibilitySchema,
 });
 export type HostDraft = z.infer<typeof hostDraftSchema>;
@@ -336,6 +367,22 @@ export const creatorSubmissionSchema = hostDraftSchema.extend({
   status: eventStatusSchema,
 });
 export type CreatorSubmission = z.infer<typeof creatorSubmissionSchema>;
+
+export const hostEventSummarySchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  status: eventStatusSchema,
+  capacity: z.number().int().positive(),
+  requestCount: z.number().int().nonnegative(),
+  acceptedCount: z.number().int().nonnegative(),
+  threadId: z.string().nullable(),
+});
+export type HostEventSummary = z.infer<typeof hostEventSummarySchema>;
+
+export const hostGuestRequestSchema = rsvpRequestSchema.extend({
+  eventTitle: z.string(),
+});
+export type HostGuestRequest = z.infer<typeof hostGuestRequestSchema>;
 
 export const homeSummarySchema = z.object({
   upcomingRsvpCount: z.number().int().nonnegative(),
