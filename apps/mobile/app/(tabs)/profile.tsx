@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import {
   Avatar,
@@ -15,6 +16,7 @@ import {
   useThemeColors,
 } from '@hausy/ui';
 import { useProfile } from '@/features/profile/use-profile';
+import { signOut } from '@/lib/auth';
 import { useAppStore } from '@/state/app-store';
 
 export default function ProfileScreen() {
@@ -25,6 +27,26 @@ export default function ProfileScreen() {
   const colorScheme = useAppStore((state) => state.colorScheme);
   const setColorScheme = useAppStore((state) => state.setColorScheme);
   const setComfortSetting = useAppStore((state) => state.setComfortSetting);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+    const result = await signOut();
+    setIsSigningOut(false);
+
+    if (result.error) {
+      if (Platform.OS !== 'web') {
+        Alert.alert('Logout failed', result.error.message);
+      }
+      return;
+    }
+
+    router.replace('/login');
+  }
 
   return (
     <Screen>
@@ -93,6 +115,22 @@ export default function ProfileScreen() {
           onPress={() => router.push('/host')}
         />
       </Card>
+
+      <Pressable
+        accessibilityRole="button"
+        disabled={isSigningOut}
+        onPress={handleSignOut}
+        style={[styles.logoutButton, { borderColor: colors.faint }, isSigningOut ? styles.disabledButton : null]}
+      >
+        {isSigningOut ? (
+          <ActivityIndicator color={colors.brand} />
+        ) : (
+          <>
+            <Ionicons name="log-out-outline" size={18} color={colors.brand} />
+            <Text style={[styles.logoutText, { color: colors.brand }]}>Log out</Text>
+          </>
+        )}
+      </Pressable>
     </Screen>
   );
 }
@@ -186,5 +224,20 @@ const styles = StyleSheet.create({
   },
   hostCopy: {
     ...typographyRoles.body,
+  },
+  logoutButton: {
+    alignItems: 'center',
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  logoutText: {
+    ...typographyRoles.label,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });

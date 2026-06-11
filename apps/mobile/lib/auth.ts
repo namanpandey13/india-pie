@@ -176,6 +176,26 @@ export async function enterWithDevBypass(): Promise<ApiResult<AuthUser | null>> 
   }
 }
 
+export async function signOut(): Promise<ApiResult<null>> {
+  try {
+    if (!supabase) {
+      return ok(null);
+    }
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      logAppEvent('error', 'auth.signOut', { message: error.message });
+      return fail('signOutError', 'Could not log out. Try again.', true);
+    }
+
+    return ok(null);
+  } catch (error) {
+    logAppEvent('error', 'auth.signOut', error);
+    return fail('signOutError', 'Could not log out. Try again.', true);
+  }
+}
+
 export function useAuthCallbackUrl() {
   return Linking.useURL();
 }
