@@ -6,6 +6,7 @@ import { fail, ok } from '@hausy/api';
 import type { ApiResult, AuthUser } from '@hausy/types';
 import { logAppEvent } from '@hausy/utils';
 import { Platform } from 'react-native';
+import { clearAuthBypassSession, markAuthBypassSession } from './auth-session';
 import { supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -153,6 +154,7 @@ export async function signUpWithPassword(email: string, password: string): Promi
 export async function enterWithDevBypass(): Promise<ApiResult<AuthUser | null>> {
   try {
     if (!supabase) {
+      markAuthBypassSession();
       return ok(null);
     }
 
@@ -179,6 +181,7 @@ export async function enterWithDevBypass(): Promise<ApiResult<AuthUser | null>> 
 export async function signOut(): Promise<ApiResult<null>> {
   try {
     if (!supabase) {
+      clearAuthBypassSession();
       return ok(null);
     }
 
@@ -188,6 +191,8 @@ export async function signOut(): Promise<ApiResult<null>> {
       logAppEvent('error', 'auth.signOut', { message: error.message });
       return fail('signOutError', 'Could not log out. Try again.', true);
     }
+
+    clearAuthBypassSession();
 
     return ok(null);
   } catch (error) {

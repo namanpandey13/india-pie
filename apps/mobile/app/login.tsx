@@ -216,7 +216,7 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
 
-              {__DEV__ && isAuthBypassEnabled ? (
+              {isAuthBypassEnabled ? (
                 <Pressable
                   accessibilityRole="button"
                   disabled={isBusy}
