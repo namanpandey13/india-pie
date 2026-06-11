@@ -5,6 +5,7 @@ import {
   signInWithPassword,
   signUpWithPassword,
 } from '@/lib/auth';
+import { isAuthBypassEnabled } from '@/lib/auth-session';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -105,9 +106,20 @@ export default function LoginScreen() {
 
     setIsBypassSubmitting(true);
     setError(null);
-    await enterWithDevBypass();
+    const result = await enterWithDevBypass();
     setIsBypassSubmitting(false);
-    router.replace('/home');
+
+    if (result.error) {
+      setError(result.error.message);
+      return;
+    }
+
+    if (result.data || isAuthBypassEnabled) {
+      router.replace('/home');
+      return;
+    }
+
+    setError('Local auth bypass is not enabled for this build.');
   }
 
   const content = (
@@ -204,7 +216,7 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
 
-              {__DEV__ ? (
+              {__DEV__ && isAuthBypassEnabled ? (
                 <Pressable
                   accessibilityRole="button"
                   disabled={isBusy}
