@@ -5,18 +5,20 @@ import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { fail, ok } from '@hausy/api';
 import type { ApiResult, AuthUser } from '@hausy/types';
 import { logAppEvent } from '@hausy/utils';
-import { Platform } from 'react-native';
 import { supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const authRedirectScheme = process.env.EXPO_PUBLIC_AUTH_REDIRECT_SCHEME || 'hausy';
 const authRedirectPath = process.env.EXPO_PUBLIC_AUTH_REDIRECT_PATH || 'auth/callback';
+const configuredAuthRedirectUrl = process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL?.trim();
 
 export const authRedirectTo =
-  Platform.OS === 'web'
-    ? makeRedirectUri({ path: authRedirectPath })
-    : `${authRedirectScheme}://${authRedirectPath}`;
+  configuredAuthRedirectUrl ||
+  makeRedirectUri({
+    path: authRedirectPath,
+    scheme: authRedirectScheme,
+  });
 
 export async function createSessionFromUrl(url: string): Promise<ApiResult<AuthUser | null>> {
   try {

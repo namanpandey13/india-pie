@@ -22,12 +22,17 @@ EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key_here
 EXPO_PUBLIC_AUTH_REDIRECT_SCHEME=hausy
 EXPO_PUBLIC_AUTH_REDIRECT_PATH=auth/callback
+# Optional. Leave unset for local dev and Vercel previews.
+# EXPO_PUBLIC_AUTH_REDIRECT_URL=https://your-domain.com/auth/callback
 ```
 
 Supabase Auth → URL Configuration, add:
 ```
 exp://**
 hausy://**
+http://localhost:8081/auth/callback
+https://*-<team-or-account-slug>.vercel.app/auth/callback
+https://your-production-domain.com/auth/callback
 ```
 
 Before pushing:
