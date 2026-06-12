@@ -1,244 +1,131 @@
-import {
-  authRedirectTo,
-  enterWithDevBypass,
-  signInWithGoogle,
-  signInWithPassword,
-  signUpWithPassword,
-} from '@/lib/auth';
-import { Ionicons } from '@expo/vector-icons';
+import { signInWithPassword, signUpWithPassword } from '@/lib/auth';
+import { GhostButton, Input, PrimaryButton, typographyRoles, useThemeColors } from '@hausy/ui';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type AuthMode = 'signIn' | 'signUp';
-
-const backgroundImage = {
-  uri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
-};
-
 export default function LoginScreen() {
-  const [mode, setMode] = useState<AuthMode>('signIn');
+  const colors = useThemeColors();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
-  const [isBypassSubmitting, setIsBypassSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showImage, setShowImage] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [password, setPassword] = useState('');
 
-  const isBusy = isPasswordSubmitting || isGoogleSubmitting || isBypassSubmitting;
-  const canSubmitPassword = email.trim().length > 0 && password.length > 0 && !isBusy;
-
-  async function handlePasswordSubmit() {
-    if (!canSubmitPassword) {
+  async function handleSubmit() {
+    if (isLoading) {
       return;
     }
 
-    setIsPasswordSubmitting(true);
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail.includes('@')) {
+      setError('Enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
     setError(null);
+    setIsLoading(true);
 
-    const result =
-      mode === 'signIn'
-        ? await signInWithPassword(email, password)
-        : await signUpWithPassword(email, password);
+    try {
+      const result =
+        mode === 'login'
+          ? await signInWithPassword(normalizedEmail, password)
+          : await signUpWithPassword(normalizedEmail, password);
 
-    setIsPasswordSubmitting(false);
-
-    if (result.error) {
-      setError(result.error.message);
-      if (Platform.OS !== 'web') {
-        Alert.alert(mode === 'signIn' ? 'Login failed' : 'Account creation failed', result.error.message);
+      if (result.error) {
+        setError(result.error.message);
+        return;
       }
-      return;
+
+      router.replace('/explore');
+    } finally {
+      setIsLoading(false);
     }
-
-    router.replace('/home');
-  }
-
-  async function handleGoogleSignIn() {
-    if (isBusy) {
-      return;
-    }
-
-    setIsGoogleSubmitting(true);
-    setError(null);
-
-    const result = await signInWithGoogle();
-
-    setIsGoogleSubmitting(false);
-
-    if (result.error) {
-      setError(result.error.message);
-      if (Platform.OS !== 'web') {
-        Alert.alert('Google sign in failed', result.error.message);
-      }
-      return;
-    }
-
-    if (result.data) {
-      router.replace('/home');
-    }
-  }
-
-  function toggleMode() {
-    setMode((currentMode) => (currentMode === 'signIn' ? 'signUp' : 'signIn'));
-    setError(null);
-  }
-
-  async function handleDevBypass() {
-    if (isBusy) {
-      return;
-    }
-
-    setIsBypassSubmitting(true);
-    setError(null);
-    await enterWithDevBypass();
-    setIsBypassSubmitting(false);
-    router.replace('/home');
-  }
-
-  const content = (
-    <>
-      <View style={styles.overlay} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}
-      >
-        <SafeAreaView style={styles.safe}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.brand}>
-              <Text style={styles.logo}>hausy</Text>
-            </View>
-
-            <View style={styles.panel}>
-              <Text style={styles.title}>{mode === 'signIn' ? 'Log in' : 'Create account'}</Text>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Email</Text>
-                <TextInput
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  autoCorrect={false}
-                  inputMode="email"
-                  keyboardType="email-address"
-                  onChangeText={setEmail}
-                  placeholder="you@example.com"
-                  placeholderTextColor="#818898"
-                  returnKeyType="next"
-                  style={styles.input}
-                  textContentType="emailAddress"
-                  value={email}
-                />
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Password</Text>
-                <TextInput
-                  autoCapitalize="none"
-                  autoComplete={mode === 'signIn' ? 'password' : 'new-password'}
-                  onChangeText={setPassword}
-                  onSubmitEditing={handlePasswordSubmit}
-                  placeholder={mode === 'signIn' ? 'Your password' : 'Create a password'}
-                  placeholderTextColor="#818898"
-                  returnKeyType="done"
-                  secureTextEntry
-                  style={styles.input}
-                  textContentType={mode === 'signIn' ? 'password' : 'newPassword'}
-                  value={password}
-                />
-              </View>
-
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-              <Pressable
-                accessibilityRole="button"
-                disabled={!canSubmitPassword}
-                onPress={handlePasswordSubmit}
-                style={[styles.primaryButton, !canSubmitPassword ? styles.disabledButton : null]}
-              >
-                {isPasswordSubmitting ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>
-                    {mode === 'signIn' ? 'Log in' : 'Create account'}
-                  </Text>
-                )}
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                disabled={isBusy}
-                onPress={handleGoogleSignIn}
-                style={[styles.googleButton, isBusy ? styles.disabledButton : null]}
-              >
-                {isGoogleSubmitting ? (
-                  <ActivityIndicator color="#111827" />
-                ) : (
-                  <>
-                    <Ionicons color="#111827" name="logo-google" size={20} />
-                    <Text style={styles.googleButtonText}>Continue with Google</Text>
-                  </>
-                )}
-              </Pressable>
-
-              <Pressable accessibilityRole="button" onPress={toggleMode} style={styles.switchButton}>
-                <Text style={styles.switchText}>
-                  {mode === 'signIn' ? 'New to Hausy? Create account' : 'Already have an account? Log in'}
-                </Text>
-              </Pressable>
-
-              {__DEV__ ? (
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={isBusy}
-                  onPress={handleDevBypass}
-                  style={[styles.devButton, isBusy ? styles.disabledButton : null]}
-                >
-                  {isBypassSubmitting ? (
-                    <ActivityIndicator color="#111827" />
-                  ) : (
-                    <Text style={styles.devButtonText}>Enter app for now</Text>
-                  )}
-                </Pressable>
-              ) : null}
-
-              {__DEV__ ? <Text style={styles.debugText}>Redirect: {authRedirectTo}</Text> : null}
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </>
-  );
-
-  if (!showImage) {
-    return <View style={styles.background}>{content}</View>;
   }
 
   return (
     <ImageBackground
-      onError={() => setShowImage(false)}
       resizeMode="cover"
-      source={backgroundImage}
-      style={styles.background}
-    >
-      {content}
+      source={{
+        uri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+      }}
+      style={[styles.background, { backgroundColor: colors.bg }]}>
+      <View style={[styles.overlay, { backgroundColor: colors.overlayStrong }]} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboard}>
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.brand}>
+            <Text style={[styles.logo, { color: colors.white }]}>hausy</Text>
+            <Text style={[styles.title, { color: colors.white }]}>
+              Offline plans, without stranger anxiety.
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.panel,
+              { backgroundColor: colors.overlayPanel, borderColor: colors.line },
+            ]}>
+            <Text style={[styles.formTitle, { color: colors.white }]}>
+              {mode === 'login' ? 'Welcome back' : 'Create account'}
+            </Text>
+            <Input
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+              onChangeText={setEmail}
+              placeholder="Email address"
+              value={email}
+            />
+            <Input
+              autoCapitalize="none"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              onChangeText={setPassword}
+              onSubmitEditing={handleSubmit}
+              placeholder="Password"
+              secureTextEntry
+              value={password}
+            />
+            <PrimaryButton
+              icon="arrow-forward-outline"
+              label={
+                isLoading
+                  ? mode === 'login'
+                    ? 'Signing in...'
+                    : 'Creating account...'
+                  : mode === 'login'
+                    ? 'Login'
+                    : 'Register'
+              }
+              loading={isLoading}
+              onPress={handleSubmit}
+            />
+            <GhostButton
+              disabled={isLoading}
+              label={mode === 'login' ? 'New here? Register' : 'Already registered? Login'}
+              onPress={() => {
+                setMode((current) => (current === 'login' ? 'register' : 'login'));
+                setError(null);
+              }}
+            />
+            {error ? <Text style={[styles.error, { color: colors.brand }]}>{error}</Text> : null}
+          </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
@@ -248,139 +135,39 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   brand: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 260,
+    gap: 16,
+    marginTop: 'auto',
   },
-  debugText: {
-    color: '#667085',
-    fontSize: 11,
-    lineHeight: 16,
-    marginTop: 6,
+  error: {
+    ...typographyRoles.caption,
     textAlign: 'center',
   },
-  disabledButton: {
-    opacity: 0.55,
+  formTitle: {
+    ...typographyRoles.h3,
+    marginBottom: 2,
   },
-  devButton: {
-    alignItems: 'center',
-    backgroundColor: '#eef2f7',
-    borderRadius: 8,
-    justifyContent: 'center',
-    marginTop: 8,
-    minHeight: 46,
-    paddingHorizontal: 16,
-  },
-  devButtonText: {
-    color: '#111827',
-    fontSize: 15,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  errorText: {
-    color: '#b42318',
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  field: {
-    gap: 8,
-    marginTop: 16,
-  },
-  googleButton: {
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderColor: '#d0d5dd',
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'center',
-    marginTop: 12,
-    minHeight: 50,
-    paddingHorizontal: 16,
-  },
-  googleButtonText: {
-    color: '#111827',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  input: {
-    backgroundColor: '#ffffff',
-    borderColor: '#c8cfda',
-    borderRadius: 8,
-    borderWidth: 1,
-    color: '#111827',
-    fontSize: 16,
-    minHeight: 50,
-    paddingHorizontal: 14,
-  },
-  keyboardView: {
+  keyboard: {
     flex: 1,
   },
-  label: {
-    color: '#344054',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   logo: {
-    color: '#ffffff',
-    fontSize: 58,
-    fontWeight: '700',
-    lineHeight: 64,
-    textAlign: 'center',
+    ...typographyRoles.h1,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(17, 24, 39, 0.42)',
   },
   panel: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderColor: 'rgba(255, 255, 255, 0.55)',
     borderRadius: 8,
     borderWidth: 1,
+    gap: 14,
+    marginTop: 24,
     padding: 16,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#111827',
-    borderRadius: 8,
-    justifyContent: 'center',
-    marginTop: 18,
-    minHeight: 50,
-    paddingHorizontal: 16,
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
   },
   safe: {
     flex: 1,
+    justifyContent: 'flex-end',
     padding: 18,
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'space-between',
-  },
-  switchButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 42,
-    marginTop: 8,
-  },
-  switchText: {
-    color: '#111827',
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
   title: {
-    color: '#111827',
-    fontSize: 24,
-    fontWeight: '700',
-    textAlign: 'center',
+    ...typographyRoles.hero,
   },
 });

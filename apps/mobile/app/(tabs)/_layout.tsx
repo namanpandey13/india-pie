@@ -1,9 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
 
-import { componentTokens, typographyRoles, useThemeColors } from '@hausy/ui';
 import { useAuthSession } from '@/lib/auth-session';
+import { componentTokens, typographyRoles, useThemeColors } from '@hausy/ui';
 
 export default function TabLayout() {
   const colors = useThemeColors();
@@ -38,22 +38,18 @@ export default function TabLayout() {
         },
         tabBarHideOnKeyboard: true,
         headerShown: false,
-      }}>
+      }}
+    >
       <Tabs.Screen
-        name="home"
+        name="explore"
         options={{
-          title: 'Home',
+          title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="discover"
-        options={{
-          title: 'Discover',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'compass' : 'compass-outline'} color={color} />
+            <Ionicons
+              size={componentTokens.controls.tabIconSize}
+              name={focused ? 'compass' : 'compass-outline'}
+              color={color}
+            />
           ),
         }}
       />
@@ -68,7 +64,11 @@ export default function TabLayout() {
         options={{
           title: 'Saved',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'bookmark' : 'bookmark-outline'} color={color} />
+            <Ionicons
+              size={componentTokens.controls.tabIconSize}
+              name={focused ? 'bookmark' : 'bookmark-outline'}
+              color={color}
+            />
           ),
         }}
       />
@@ -87,7 +87,11 @@ export default function TabLayout() {
             width: 8,
           },
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'chatbubble' : 'chatbubble-outline'} color={color} />
+            <Ionicons
+              size={componentTokens.controls.tabIconSize}
+              name={focused ? 'chatbubble' : 'chatbubble-outline'}
+              color={color}
+            />
           ),
         }}
       />
@@ -96,7 +100,11 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons size={componentTokens.controls.tabIconSize} name={focused ? 'person' : 'person-outline'} color={color} />
+            <Ionicons
+              size={componentTokens.controls.tabIconSize}
+              name={focused ? 'person' : 'person-outline'}
+              color={color}
+            />
           ),
         }}
       />

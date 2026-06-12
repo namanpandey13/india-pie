@@ -64,7 +64,7 @@ export default function SavedScreen() {
           <Card style={styles.emptyCard}>
             <Text style={[styles.emptyTitle, { color: colors.ink }]}>No saved plans yet.</Text>
             <Text style={[styles.emptyBody, { color: colors.muted }]}>Save one from Explore when the host, room, and timing feel right.</Text>
-            <GhostButton label="Browse Explore" icon="search-outline" onPress={() => router.push('/discover')} />
+            <GhostButton label="Browse Explore" icon="search-outline" onPress={() => router.push('/explore')} />
           </Card>
         ) : null}
       </View>

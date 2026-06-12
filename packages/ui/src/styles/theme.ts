@@ -58,6 +58,7 @@ export type IconName =
   | 'heart-outline'
   | 'home-outline'
   | 'location-outline'
+  | 'log-out-outline'
   | 'logo-instagram'
   | 'logo-linkedin'
   | 'notifications-outline'

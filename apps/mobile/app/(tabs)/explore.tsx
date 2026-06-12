@@ -15,7 +15,7 @@ import { listDiscoveryMetadata, listEvents, toggleSavedEvent as toggleSavedEvent
 import { useEffect, useMemo, useState } from 'react';
 import { useAppStore } from '@/state/app-store';
 
-export default function HomeScreen() {
+export default function ExploreScreen() {
   const colors = useThemeColors();
   const [activeTab, setActiveTab] = useState('');
   const [query, setQuery] = useState('');
@@ -23,7 +23,7 @@ export default function HomeScreen() {
   const saved = useAppStore((state) => state.savedEventIds);
   const toggleSavedEventLocal = useAppStore((state) => state.toggleSavedEvent);
   const eventsQuery = useQuery({
-    queryKey: ['home-events', activeTab, query],
+    queryKey: ['explore-events', activeTab, query],
     queryFn: () => listEvents({ tag: activeTab, query }),
   });
   const metadataQuery = useQuery({
@@ -93,7 +93,7 @@ export default function HomeScreen() {
 
         {eventsQuery.data?.error ? (
           <View style={[styles.emptyState, { borderColor: colors.line, backgroundColor: colors.surfaceAlt }]}>
-            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Home is unavailable.</Text>
+            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Explore is unavailable.</Text>
             <Text style={[styles.emptyBody, { color: colors.muted }]}>{eventsQuery.data.error.message}</Text>
           </View>
         ) : null}

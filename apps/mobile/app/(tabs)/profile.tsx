@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import {
   Avatar,
@@ -17,6 +17,7 @@ import {
 } from '@hausy/ui';
 import { useProfile } from '@/features/profile/use-profile';
 import { useAppStore } from '@/state/app-store';
+import { signOut } from '@/lib/auth';
 
 export default function ProfileScreen() {
   const loginProfile = useProfile();
@@ -33,6 +34,17 @@ export default function ProfileScreen() {
   const colorScheme = useAppStore((state) => state.colorScheme);
   const setColorScheme = useAppStore((state) => state.setColorScheme);
   const setComfortSetting = useAppStore((state) => state.setComfortSetting);
+
+  async function handleSignOut() {
+    const result = await signOut();
+
+    if (result.error) {
+      Alert.alert('Sign out failed', result.error.message);
+      return;
+    }
+
+    router.replace('/login');
+  }
 
   useEffect(() => {
     if (profile) {
@@ -133,6 +145,8 @@ export default function ProfileScreen() {
           onPress={() => router.push('/host')}
         />
       </Card>
+
+      <GhostButton label="Sign out" icon="log-out-outline" onPress={handleSignOut} />
     </Screen>
   );
 }

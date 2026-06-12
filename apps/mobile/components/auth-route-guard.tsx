@@ -22,7 +22,7 @@ export function AuthRouteGuard() {
     }
 
     if (isSignedIn && isPublicRoute) {
-      router.replace('/home');
+      router.replace('/explore');
     }
   }, [isLoading, isSignedIn, segments]);
 

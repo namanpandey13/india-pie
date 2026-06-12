@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import {
   componentTokens,
   radius,
@@ -16,6 +16,7 @@ export function Button({
   label,
   icon,
   disabled,
+  loading = false,
   onPress,
   tone = 'lime',
   variant = 'primary',
@@ -24,6 +25,7 @@ export function Button({
   label: string;
   icon?: IconName;
   disabled?: boolean;
+  loading?: boolean;
   onPress?: () => void;
   tone?: AccentTone;
   variant?: 'primary' | 'ghost';
@@ -35,16 +37,19 @@ export function Button({
 
   return (
     <Pressable
-      disabled={disabled || !onPress}
+      accessibilityState={{ busy: loading, disabled: disabled || loading || !onPress }}
+      disabled={disabled || loading || !onPress}
       onPress={onPress}
       style={[
         isPrimary ? styles.button : styles.ghostButton,
         isPrimary && { backgroundColor: semanticAccents[tone] },
         !isPrimary && { backgroundColor: colors.surfaceAlt, borderColor: colors.line },
-        (disabled || !onPress) && styles.disabled,
+        (disabled || loading || !onPress) && styles.disabled,
         style,
       ]}>
-      {icon ? (
+      {loading ? (
+        <ActivityIndicator color={isPrimary ? colors.black : colors.ink} size="small" />
+      ) : icon ? (
         <Ionicons name={icon} size={18} color={isPrimary ? colors.black : colors.ink} />
       ) : null}
       <Text style={[isPrimary ? styles.buttonText : styles.ghostButtonText, { color: isPrimary ? colors.black : colors.ink }]}>

@@ -14,8 +14,6 @@ const AuthSessionContext = createContext<AuthSessionState>({
   session: null,
 });
 
-export const isAuthBypassEnabled = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
-
 export function AuthSessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,16 +32,13 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (!error && data.session) {
-        setSession(data.session);
-      } else if (!error && isAuthBypassEnabled) {
-        const { data: anonymousData } = await supabaseClient.auth
-          .signInAnonymously()
-          .catch(() => ({ data: { session: null } }));
-
-        if (mounted && anonymousData.session) {
-          setSession(anonymousData.session);
+      if (!error && data.session?.user.is_anonymous) {
+        await supabaseClient.auth.signOut();
+        if (mounted) {
+          setSession(null);
         }
+      } else if (!error) {
+        setSession(data.session);
       }
 
       setIsLoading(false);
@@ -63,7 +58,7 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       isLoading,
-      isSignedIn: isAuthBypassEnabled || Boolean(session),
+      isSignedIn: Boolean(session),
       session,
     }),
     [isLoading, session],

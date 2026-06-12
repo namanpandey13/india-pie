@@ -1,5 +1,4 @@
 import { AuthRouteGuard } from '@/components/auth-route-guard';
-import { createSessionFromUrl, useAuthCallbackUrl } from '@/lib/auth';
 import { AuthSessionProvider } from '@/lib/auth-session';
 import { AppQueryProvider } from '@/lib/query-client';
 import { supabase } from '@/lib/supabase';
@@ -27,7 +26,6 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const callbackUrl = useAuthCallbackUrl();
   const colorScheme = useAppStore((state) => state.colorScheme);
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -45,12 +43,6 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
-
-  useEffect(() => {
-    if (callbackUrl) {
-      createSessionFromUrl(callbackUrl);
-    }
-  }, [callbackUrl]);
 
   if (!fontsLoaded) {
     return null;
