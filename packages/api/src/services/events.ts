@@ -12,6 +12,7 @@ import {
   selectEventTagsByEventIds,
   selectPublicEventById,
   selectPublicEvents,
+  selectProfileAvatarsByIds,
   selectVenuesByIds,
 } from '../queries/events';
 import { fail, ok } from '../result';
@@ -149,12 +150,22 @@ async function hydrateEvents(events: EventRow[]) {
 
   const creatorLinksResult = await selectCreatorLinksByCreatorIds(client, creatorIds);
   const creatorCredentialsResult = await selectCreatorCredentialsByCreatorIds(client, creatorIds);
+  const profileAvatarsResult = await selectProfileAvatarsByIds(
+    client,
+    (creatorsResult.data ?? []).map((creator) => creator.profileId),
+  );
 
-  if (creatorLinksResult.error || creatorCredentialsResult.error) {
-    throw new Error(creatorLinksResult.error?.message ?? creatorCredentialsResult.error?.message ?? 'Could not load creators.');
+  if (creatorLinksResult.error || creatorCredentialsResult.error || profileAvatarsResult.error) {
+    throw new Error(
+      creatorLinksResult.error?.message ??
+        creatorCredentialsResult.error?.message ??
+        profileAvatarsResult.error?.message ??
+        'Could not load creators.',
+    );
   }
 
   const creatorsById = byId(creatorsResult.data ?? []);
+  const profileAvatarsById = byId(profileAvatarsResult.data ?? []);
   const venuesById = byId(venuesResult.data ?? []);
 
   return events
@@ -170,6 +181,7 @@ async function hydrateEvents(events: EventRow[]) {
         attendeePreviews: byEventId(attendeesResult.data ?? [], event.id),
         checkpoints: byEventId(checkpointsResult.data ?? [], event.id),
         creator,
+        creatorAvatarUrl: profileAvatarsById.get(creator.profileId)?.avatarUrl ?? null,
         creatorCredentials: byCreatorId(creatorCredentialsResult.data ?? [], event.creatorId),
         creatorLinks: byCreatorId(creatorLinksResult.data ?? [], event.creatorId),
         event,

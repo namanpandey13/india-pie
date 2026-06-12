@@ -1,8 +1,6 @@
 import {
   getEventById,
   getHostProfile,
-  listEventCheckpointsForEvent,
-  listReviewsForEvent,
   toggleSavedEvent as toggleSavedEventRemote,
 } from '@hausy/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -24,16 +22,6 @@ export function useEventDetail(id?: string) {
     queryFn: () => getHostProfile(event?.organizer.id ?? ''),
     enabled: Boolean(event),
   });
-  const checkpointsQuery = useQuery({
-    queryKey: ['event-checkpoints', event?.id],
-    queryFn: () => listEventCheckpointsForEvent(event?.id ?? ''),
-    enabled: Boolean(event),
-  });
-  const reviewsQuery = useQuery({
-    queryKey: ['reviews', event?.id],
-    queryFn: () => listReviewsForEvent(event?.id ?? ''),
-    enabled: Boolean(event),
-  });
   const followedHosts = useAppStore((state) => state.followedHosts);
   const followHost = useAppStore((state) => state.followHost);
   const saved = useAppStore((state) => state.savedEventIds.includes(event?.id ?? ''));
@@ -48,7 +36,6 @@ export function useEventDetail(id?: string) {
   const [tab, setTab] = useState<EventDetailTab>('details');
   const [joined, setJoined] = useState(false);
   return {
-    checkpoints: checkpointsQuery.data?.data ?? [],
     event,
     eventError: eventQuery.data?.error ?? null,
     followHost: () => {
@@ -59,7 +46,6 @@ export function useEventDetail(id?: string) {
     host: hostQuery.data?.data ?? null,
     hostFollowed: followedHosts.includes(event?.organizer.id ?? ''),
     joined,
-    reviews: reviewsQuery.data?.data ?? [],
     saved,
     setJoined,
     setTab,

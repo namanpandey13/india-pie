@@ -27,6 +27,11 @@ export type CreatorRow = {
   status: string;
 };
 
+export type ProfileAvatarRow = {
+  id: string;
+  avatarUrl: string | null;
+};
+
 export type CreatorCredentialRow = {
   creatorId: string;
   label: string;
@@ -47,6 +52,8 @@ export type VenueRow = {
 
 export type EventRow = {
   id: string;
+  seriesKey: string;
+  occurrenceNumber: number;
   creatorId: string;
   venueId: string;
   title: string;
@@ -87,6 +94,7 @@ export type EventPromptRow = {
 
 export type EventAttendeePreviewRow = {
   id: string;
+  avatarUrl: string | null;
   eventId: string;
   displayName: string;
   role: string;
@@ -100,6 +108,7 @@ export function mapEventRow(input: {
   attendeePreviews: EventAttendeePreviewRow[];
   checkpoints: EventCheckpointRow[];
   creator: CreatorRow;
+  creatorAvatarUrl?: string | null;
   creatorCredentials: CreatorCredentialRow[];
   creatorLinks: CreatorLinkRow[];
   event: EventRow;
@@ -113,11 +122,14 @@ export function mapEventRow(input: {
   }
 
   const session = input.session;
-  const organizer = mapOrganizer(input.creator, input.creatorLinks);
+  const organizer = mapOrganizer(input.creator, input.creatorLinks, input.creatorAvatarUrl);
   const checkpoints = input.checkpoints.map(mapCheckpoint);
 
   return {
     id: input.event.id,
+    seriesKey: input.event.seriesKey,
+    occurrenceNumber: input.event.occurrenceNumber,
+    previousOccurrences: Math.max(input.event.occurrenceNumber - 1, 0),
     status: normalizeEventStatus(input.event.status),
     title: input.event.title,
     locality: input.venue.locality,
@@ -150,8 +162,9 @@ export function mapHostProfile(
   creator: CreatorRow,
   links: CreatorLinkRow[] = [],
   credentials: CreatorCredentialRow[] = [],
+  avatarUrl: string | null = null,
 ): HostProfile {
-  const organizer = mapOrganizer(creator, links);
+  const organizer = mapOrganizer(creator, links, avatarUrl);
 
   return {
     ...organizer,
@@ -183,9 +196,14 @@ export function mapCreatorProfile(
   };
 }
 
-function mapOrganizer(creator: CreatorRow, links: CreatorLinkRow[] = []): Organizer {
+function mapOrganizer(
+  creator: CreatorRow,
+  links: CreatorLinkRow[] = [],
+  avatarUrl: string | null = null,
+): Organizer {
   return {
     id: creator.id,
+    avatarUrl,
     name: creator.displayName,
     title: creator.title,
     bio: creator.bio,
@@ -200,6 +218,7 @@ function mapOrganizer(creator: CreatorRow, links: CreatorLinkRow[] = []): Organi
 function mapAttendee(attendee: EventAttendeePreviewRow): Attendee {
   return {
     id: attendee.id,
+    avatarUrl: attendee.avatarUrl,
     name: attendee.displayName,
     role: attendee.role,
     signal: attendee.signal,

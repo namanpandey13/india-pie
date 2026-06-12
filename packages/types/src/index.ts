@@ -91,6 +91,7 @@ export type EventCategory = z.infer<typeof eventCategorySchema>;
 
 export const attendeeSchema = z.object({
   id: z.string(),
+  avatarUrl: z.string().url().nullable(),
   name: z.string(),
   role: z.string(),
   signal: z.string(),
@@ -117,6 +118,7 @@ export type Venue = z.infer<typeof venueSchema>;
 
 export const organizerSchema = z.object({
   id: z.string(),
+  avatarUrl: z.string().url().nullable(),
   name: z.string(),
   title: z.string(),
   bio: z.string(),
@@ -179,6 +181,9 @@ export type EventCheckpoint = z.infer<typeof eventCheckpointSchema>;
 
 export const eventSchema = z.object({
   id: z.string(),
+  seriesKey: z.string(),
+  occurrenceNumber: z.number().int().positive(),
+  previousOccurrences: z.number().int().nonnegative(),
   status: eventStatusSchema,
   title: z.string(),
   locality: z.string(),
@@ -203,6 +208,9 @@ export type Event = z.infer<typeof eventSchema>;
 
 export const eventCardDtoSchema = eventSchema.pick({
   id: true,
+  seriesKey: true,
+  occurrenceNumber: true,
+  previousOccurrences: true,
   status: true,
   title: true,
   locality: true,

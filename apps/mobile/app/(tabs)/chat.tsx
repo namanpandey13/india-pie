@@ -1,21 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { listMyTickets, sendPlanInboxMessage } from '@hausy/api';
+import { listMyRsvpRequests, listMyTickets, sendPlanInboxMessage } from '@hausy/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { rsvpStatusLabel } from '@hausy/types';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Card, Header, Screen, SectionTitle, TopBar, typographyRoles, useThemeColors } from '@hausy/ui';
+import { Card, Header, Screen, SectionTitle, typographyRoles, useThemeColors } from '@hausy/ui';
 import { useChatOverview } from '@/features/chat/use-chat-overview';
 import { useAppStore } from '@/state/app-store';
 
 export default function ChatScreen() {
   const colors = useThemeColors();
+  const [activeSection, setActiveSection] = useState<'chats' | 'rsvps' | 'tickets'>('chats');
   const { error, isLoading, threads } = useChatOverview();
   const ticketsQuery = useQuery({
     queryKey: ['tickets'],
     queryFn: listMyTickets,
   });
   const tickets = ticketsQuery.data?.data ?? [];
+  const rsvpsQuery = useQuery({
+    queryKey: ['my-rsvps'],
+    queryFn: listMyRsvpRequests,
+  });
+  const rsvps = rsvpsQuery.data?.data ?? [];
   const queryClient = useQueryClient();
   const chatDrafts = useAppStore((state) => state.chatDrafts);
   const setChatDraft = useAppStore((state) => state.setChatDraft);
@@ -35,17 +43,17 @@ export default function ChatScreen() {
 
   return (
     <Screen>
-      <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
-      <Header
-        eyebrow="plan inbox"
-        title="Host updates stay close to the plan."
-        subtitle="RSVP status, route proof, and creator updates live here so guests do not need a WhatsApp migration."
-      />
+      <Header eyebrow="rooms" title="Everything around the plan." subtitle="Conversations, requests, and entry details stay together." />
 
-      <SectionTitle title="Plan threads" action={`${threads.length} active`} />
-      {tickets.length ? (
-        <>
-          <SectionTitle title="Tickets" action={`${tickets.length}`} />
+      <View style={[styles.segmented, { backgroundColor: colors.surfaceAlt }]}>
+        <RoomTab label="Chats" active={activeSection === 'chats'} onPress={() => setActiveSection('chats')} />
+        <RoomTab label="RSVPs" active={activeSection === 'rsvps'} onPress={() => setActiveSection('rsvps')} />
+        <RoomTab label="Tickets" active={activeSection === 'tickets'} onPress={() => setActiveSection('tickets')} />
+      </View>
+
+      {activeSection === 'tickets' ? (
+        <View style={styles.sectionStack}>
+          <SectionTitle title="Your tickets" action={`${tickets.length}`} />
           {tickets.map((ticket) => (
             <Card key={ticket.id} style={styles.ticketCard}>
               <View style={styles.chatTop}>
@@ -58,20 +66,57 @@ export default function ChatScreen() {
               <Text style={[styles.ticketCode, { color: colors.ink }]}>{ticket.ticketCode}</Text>
             </Card>
           ))}
-        </>
+          {!ticketsQuery.isLoading && tickets.length === 0 ? (
+            <Card style={styles.alignedCard}>
+              <Text style={[styles.chatTitle, { color: colors.ink }]}>No tickets yet.</Text>
+              <Text style={[styles.prompt, { color: colors.muted }]}>Confirmed event tickets will appear here.</Text>
+            </Card>
+          ) : null}
+        </View>
       ) : null}
-      {isLoading ? (
+
+      {activeSection === 'rsvps' ? (
+        <View style={styles.sectionStack}>
+          <SectionTitle title="Your requests" action={`${rsvps.length}`} />
+          {rsvps.map((rsvp) => (
+            <Pressable
+              key={rsvp.id}
+              onPress={() => router.push({ pathname: '/event/[id]', params: { id: rsvp.eventId } })}>
+              <Card style={styles.rsvpCard}>
+                <View style={[styles.statusIcon, { backgroundColor: colors.surfaceAlt }]}>
+                  <Ionicons name="calendar-outline" size={21} color={colors.brand} />
+                </View>
+                <View style={styles.chatCopy}>
+                  <Text style={[styles.chatTitle, { color: colors.ink }]}>Event request</Text>
+                  <Text style={[styles.chatMeta, { color: colors.muted }]}>
+                    {rsvpStatusLabel[rsvp.status]}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.faint} />
+              </Card>
+            </Pressable>
+          ))}
+          {!rsvpsQuery.isLoading && rsvps.length === 0 ? (
+            <Card style={styles.alignedCard}>
+              <Text style={[styles.chatTitle, { color: colors.ink }]}>No RSVP requests yet.</Text>
+              <Text style={[styles.prompt, { color: colors.muted }]}>Requests you send from an event will appear here.</Text>
+            </Card>
+          ) : null}
+        </View>
+      ) : null}
+
+      {activeSection === 'chats' && isLoading ? (
         <Card style={styles.chatCard}>
           <Text style={[styles.chatTitle, { color: colors.ink }]}>Loading plan inbox.</Text>
         </Card>
       ) : null}
-      {error ? (
+      {activeSection === 'chats' && error ? (
         <Card style={styles.chatCard}>
           <Text style={[styles.chatTitle, { color: colors.ink }]}>Plan Inbox is unavailable.</Text>
           <Text style={[styles.message, { backgroundColor: colors.surfaceAlt, color: colors.ink }]}>{error.message}</Text>
         </Card>
       ) : null}
-      {threads.map((thread) => (
+      {activeSection === 'chats' ? threads.map((thread) => (
           <Card key={thread.id} style={styles.chatCard}>
             <View style={styles.chatTop}>
               <View style={styles.chatCopy}>
@@ -121,15 +166,37 @@ export default function ChatScreen() {
               <Text style={[styles.announceText, { color: colors.ink }]}>Post as announcement</Text>
             </Pressable>
           </Card>
-        ))}
+        )) : null}
 
-      {!isLoading && !error && threads.length === 0 ? (
+      {activeSection === 'chats' && !isLoading && !error && threads.length === 0 ? (
         <Card style={styles.alignedCard}>
           <Text style={[styles.chatTitle, { color: colors.ink }]}>No plan threads yet.</Text>
           <Text style={[styles.prompt, { color: colors.muted }]}>Threads appear after you request or join creator-led plans.</Text>
         </Card>
       ) : null}
     </Screen>
+  );
+}
+
+function RoomTab({
+  active,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  const colors = useThemeColors();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.roomTab, active && { backgroundColor: colors.surface }]}>
+      <Text style={[styles.roomTabText, { color: active ? colors.ink : colors.muted }]}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -143,6 +210,35 @@ const styles = StyleSheet.create({
   ticketCode: {
     ...typographyRoles.h2,
     letterSpacing: 0,
+  },
+  segmented: {
+    borderRadius: 16,
+    flexDirection: 'row',
+    padding: 4,
+  },
+  roomTab: {
+    alignItems: 'center',
+    borderRadius: 12,
+    flex: 1,
+    paddingVertical: 10,
+  },
+  roomTabText: {
+    ...typographyRoles.label,
+  },
+  sectionStack: {
+    gap: 14,
+  },
+  rsvpCard: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statusIcon: {
+    alignItems: 'center',
+    borderRadius: 12,
+    height: 42,
+    justifyContent: 'center',
+    width: 42,
   },
   chatTop: {
     alignItems: 'center',

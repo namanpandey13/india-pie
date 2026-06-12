@@ -3,6 +3,7 @@ export * from './primitives/avatar';
 export * from './primitives/badge';
 export * from './primitives/button';
 export * from './primitives/card';
+export * from './primitives/event-edition-mark';
 export * from './primitives/headers';
 export * from './primitives/icon-button';
 export * from './primitives/input';

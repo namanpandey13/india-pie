@@ -1,17 +1,15 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PhotoHero, typographyRoles, useThemeColors } from '@hausy/ui';
+import { IconButton, typographyRoles, useThemeColors } from '@hausy/ui';
+import { Image } from 'expo-image';
 
 import {
   AttendeePreview,
+  EventStory,
   EventIntro,
   HostTrustPanel,
-  LogisticsPanel,
-  ReviewsPreview,
   RsvpActionPanel,
-  SocialTrustPanel,
-  WhatYouDoPanel,
 } from '@/features/events/components/event-trust-sections';
 import { useEventDetail } from '@/features/events/use-event-detail';
 import { useRsvpRequest } from '@/features/rsvp/use-rsvp-request';
@@ -39,12 +37,10 @@ function ProtectedEventDetailScreen() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
-    checkpoints,
     event,
     followHost,
     host,
     hostFollowed,
-    reviews,
     saved,
     toggleSaved,
   } = useEventDetail(id);
@@ -64,33 +60,33 @@ function ProtectedEventDetailScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <PhotoHero
-          image={event.image}
-          title={event.posterText}
-          onBack={() => router.back()}
-          actions={[
-            { icon: saved ? 'bookmark' : 'bookmark-outline', onPress: toggleSaved },
-          ]}
-        />
+        <View style={styles.hero}>
+          <Image
+            accessibilityLabel={`${event.title} event`}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            source={event.image}
+            style={styles.heroImage}
+            transition={220}
+          />
+          <View style={styles.heroActions}>
+            <IconButton
+              color={colors.white}
+              icon="chevron-back"
+              onPress={() => router.back()}
+              style={{ backgroundColor: colors.overlayMedium, borderColor: colors.overlayBorder }}
+            />
+            <IconButton
+              color={colors.white}
+              icon={saved ? 'bookmark' : 'bookmark-outline'}
+              onPress={toggleSaved}
+              style={{ backgroundColor: colors.overlayMedium, borderColor: colors.overlayBorder }}
+            />
+          </View>
+        </View>
 
         <View style={styles.body}>
           <EventIntro event={event} />
-          {host ? (
-            <HostTrustPanel
-              host={host}
-              followed={hostFollowed}
-              onFollow={followHost}
-              onOpenProfile={() => router.push({ pathname: '/profile/[id]', params: { id: host.id } })}
-            />
-          ) : null}
-          <SocialTrustPanel event={event} checkpoints={checkpoints} />
-          <WhatYouDoPanel event={event} />
-          <AttendeePreview
-            event={event}
-            onOpenProfile={(profileId) => router.push({ pathname: '/profile/[id]', params: { id: profileId } })}
-          />
-          <ReviewsPreview reviews={reviews} />
-          <LogisticsPanel event={event} />
           <RsvpActionPanel
             draft={draft}
             error={error}
@@ -101,6 +97,19 @@ function ProtectedEventDetailScreen() {
             onRequest={requestToJoin}
             onUpdateDraft={updateDraft}
           />
+          {host ? (
+            <HostTrustPanel
+              host={host}
+              followed={hostFollowed}
+              onFollow={followHost}
+              onOpenProfile={() => router.push({ pathname: '/profile/[id]', params: { id: host.id } })}
+            />
+          ) : null}
+          <AttendeePreview
+            event={event}
+            onOpenProfile={(profileId) => router.push({ pathname: '/profile/[id]', params: { id: profileId } })}
+          />
+          <EventStory event={event} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -114,10 +123,26 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 34,
   },
+  hero: {
+    height: 390,
+    position: 'relative',
+  },
+  heroActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    left: 16,
+    position: 'absolute',
+    right: 16,
+    top: 12,
+  },
+  heroImage: {
+    height: '100%',
+    width: '100%',
+  },
   body: {
-    gap: 20,
+    gap: 36,
     paddingHorizontal: 18,
-    paddingTop: 18,
+    paddingTop: 24,
   },
   inlineStatus: {
     ...typographyRoles.caption,

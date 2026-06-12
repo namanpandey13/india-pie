@@ -92,7 +92,23 @@ export async function getHostProfile(hostId: string) {
       );
     }
 
-    return ok<HostProfile | null>(creator ? mapHostProfile(creator, linksResult.data ?? [], credentialsResult.data ?? []) : null);
+    if (!creator) {
+      return ok<HostProfile | null>(null);
+    }
+
+    const profileResult = await selectProfileById(client, creator.profileId);
+    if (profileResult.error) {
+      return fail<HostProfile | null>('creatorUnavailable', profileResult.error.message ?? 'Could not load this creator.', true);
+    }
+
+    return ok<HostProfile | null>(
+      mapHostProfile(
+        creator,
+        linksResult.data ?? [],
+        credentialsResult.data ?? [],
+        profileResult.data?.avatarUrl ?? null,
+      ),
+    );
   } catch {
     return fail<HostProfile | null>('creatorUnavailable', 'Could not load this creator.', true);
   }

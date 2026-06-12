@@ -39,6 +39,7 @@ function ProtectedPublicProfileScreen() {
   const profile = hostEvent
     ? {
         bio: hostEvent.organizer.bio,
+        avatarUrl: hostEvent.organizer.avatarUrl,
         context: hostEvent.organizer.title,
         initials: hostEvent.organizer.initials,
         isHost: true,
@@ -47,6 +48,7 @@ function ProtectedPublicProfileScreen() {
     : attendee
       ? {
           bio: attendee.signal,
+          avatarUrl: attendee.avatarUrl,
           context: attendee.role,
           initials: attendee.initials,
           isHost: false,
@@ -82,7 +84,12 @@ function ProtectedPublicProfileScreen() {
         </View>
 
         <View style={styles.profileHeader}>
-          <Avatar label={profile.initials} size={82} />
+          <Avatar
+            accessibilityLabel={profile.name}
+            imageUrl={profile.avatarUrl}
+            label={profile.initials}
+            size={82}
+          />
           <View style={styles.statColumn}>
             <Text style={[styles.statValue, { color: colors.ink }]}>{profileEvents.length}</Text>
             <Text style={[styles.statLabel, { color: colors.muted }]}>plans</Text>

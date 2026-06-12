@@ -11,7 +11,6 @@ import {
   Metric,
   Screen,
   SectionTitle,
-  TopBar,
   typographyRoles,
   useThemeColors,
 } from '@hausy/ui';
@@ -60,7 +59,6 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
       <Header
         eyebrow="profile"
         title="Social proof before offline plans."

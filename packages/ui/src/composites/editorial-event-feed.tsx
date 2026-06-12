@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import type { Event } from '@hausy/types';
 import { countConfirmed } from '@hausy/utils';
 import { Avatar } from '../primitives/avatar';
+import { EventEditionMark } from '../primitives/event-edition-mark';
 import { radius, spacing, typographyRoles, useThemeColors } from '../styles/theme';
 
 const TRUST_CHIPS = ['Verified Host', 'Women-friendly', 'First-timer Friendly', 'Balanced Crowd'];
@@ -121,10 +122,7 @@ export function FeaturedEventCard({
       <View style={[styles.featuredShade, { backgroundColor: colors.overlaySoft }]} />
 
       <View style={styles.featuredTopRow}>
-        <View style={[styles.featureBadge, { backgroundColor: colors.overlayStrong }]}>
-          <Ionicons name="star" size={13} color={colors.white} />
-          <Text style={[styles.featureBadgeText, { color: colors.white }]}>Featured</Text>
-        </View>
+        <EventEditionMark previousOccurrences={event.previousOccurrences} inverted />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={saved ? 'Unsave event' : 'Save event'}
@@ -141,7 +139,13 @@ export function FeaturedEventCard({
         <View style={[styles.featureRule, { backgroundColor: colors.overlayBorder }]} />
         <View style={styles.featureHostRow}>
           <View style={styles.hostIdentity}>
-            <Avatar label={event.organizer.initials.slice(0, 1)} color={colors.elevatedSurface} size={42} />
+            <Avatar
+              accessibilityLabel={event.organizer.name}
+              imageUrl={event.organizer.avatarUrl}
+              label={event.organizer.initials}
+              color={colors.elevatedSurface}
+              size={42}
+            />
             <View>
               <View style={styles.verifiedNameRow}>
                 <Text style={[styles.featureHostName, { color: colors.white }]}>{event.organizer.name}</Text>
@@ -178,7 +182,12 @@ export function CompactEventCard({
   return (
     <Pressable onPress={onPress} style={[styles.compactCard, { backgroundColor: colors.surface, borderColor: colors.line }]}>
       <View style={styles.compactMain}>
-        <Image source={{ uri: event.image }} style={styles.compactImage} contentFit="cover" />
+        <View>
+          <Image source={{ uri: event.image }} style={styles.compactImage} contentFit="cover" />
+          <View style={styles.compactEdition}>
+            <EventEditionMark previousOccurrences={event.previousOccurrences} />
+          </View>
+        </View>
         <View style={styles.compactCopy}>
           <View style={styles.compactTitleRow}>
             <View style={styles.compactTitleBlock}>
@@ -200,7 +209,13 @@ export function CompactEventCard({
           <EventMetaRow event={event} />
           <View style={styles.compactHostFooter}>
             <View style={styles.hostIdentity}>
-              <Avatar label={event.organizer.initials.slice(0, 1)} color={colors.surfaceLift} size={33} />
+              <Avatar
+                accessibilityLabel={event.organizer.name}
+                imageUrl={event.organizer.avatarUrl}
+                label={event.organizer.initials}
+                color={colors.surfaceLift}
+                size={33}
+              />
               <View>
                 <View style={styles.verifiedNameRow}>
                   <Text style={[styles.compactHostName, { color: colors.ink }]}>{event.organizer.name}</Text>
@@ -256,7 +271,13 @@ function AvatarStack({ event, light }: { event: Event; light?: boolean }) {
               marginLeft: index === 0 ? 0 : -9,
             },
           ]}>
-          <Avatar label={attendee.initials.slice(0, 1)} color={light ? colors.white : colors.surfaceLift} size={28} />
+          <Avatar
+            accessibilityLabel={attendee.name}
+            imageUrl={attendee.avatarUrl}
+            label={attendee.initials}
+            color={light ? colors.white : colors.surfaceLift}
+            size={28}
+          />
         </View>
       ))}
     </View>
@@ -465,6 +486,11 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     height: 176,
     width: 148,
+  },
+  compactEdition: {
+    left: 8,
+    position: 'absolute',
+    top: 8,
   },
   compactCopy: {
     flex: 1,

@@ -5,6 +5,7 @@ import { countConfirmed, formatEventMeta } from '@hausy/utils';
 import { Avatar } from '../primitives/avatar';
 import { Badge } from '../primitives/badge';
 import { IconButton } from '../primitives/icon-button';
+import { EventEditionMark } from '../primitives/event-edition-mark';
 import { Typography } from '../primitives/typography';
 import { componentTokens, radius, spacing, typographyRoles, useThemeColors } from '../styles/theme';
 
@@ -41,6 +42,9 @@ export function EventCard({
           style={[styles.saveButton, { backgroundColor: colors.overlayMedium, borderColor: colors.overlayBorder }]}
         />
       </View>
+      <View style={styles.editionMark}>
+        <EventEditionMark previousOccurrences={event.previousOccurrences} inverted />
+      </View>
       <View style={styles.eventText}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.eventTopline}>
           <Badge
@@ -57,7 +61,13 @@ export function EventCard({
           {formatEventMeta(event)}
         </Typography>
         <View style={styles.creatorRow}>
-          <Avatar label={event.organizer.initials} color={event.organizer.color} size={34} />
+          <Avatar
+            accessibilityLabel={event.organizer.name}
+            imageUrl={event.organizer.avatarUrl}
+            label={event.organizer.initials}
+            color={event.organizer.color}
+            size={34}
+          />
           <View style={styles.creatorCopy}>
             <Typography variant="caption" muted>
               Creator
@@ -69,7 +79,13 @@ export function EventCard({
           <View style={styles.friendStack}>
             {event.attendees.slice(0, 6).map((attendee, index) => (
               <View key={`${attendee.id}-${index}`} style={{ marginLeft: index === 0 ? 0 : -7 }}>
-                <Avatar label={attendee.initials.slice(0, 1)} color={attendee.color} size={30} />
+                <Avatar
+                  accessibilityLabel={attendee.name}
+                  imageUrl={attendee.avatarUrl}
+                  label={attendee.initials}
+                  color={attendee.color}
+                  size={30}
+                />
               </View>
             ))}
             <View style={[styles.moreBubble, { backgroundColor: colors.surfaceLift, borderColor: colors.bg, marginLeft: -7 }]}>
@@ -122,6 +138,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     position: 'absolute',
     right: 14,
+    top: 14,
+  },
+  editionMark: {
+    left: 14,
+    position: 'absolute',
     top: 14,
   },
   saveButton: {

@@ -9,11 +9,12 @@ import type {
   EventRow,
   EventSessionRow,
   EventTagRow,
+  ProfileAvatarRow,
   VenueRow,
 } from '../services/event-mappers';
 
 const PUBLIC_EVENT_STATUSES = ['planning', 'confirmed'] as const;
-const EVENT_SELECT = 'id,creatorId,venueId,title,category,imageUrl,posterText,priceLabel,vibe,about,capacity,status';
+const EVENT_SELECT = 'id,seriesKey,occurrenceNumber,creatorId,venueId,title,category,imageUrl,posterText,priceLabel,vibe,about,capacity,status';
 const CREATOR_SELECT =
   'id,profileId,handle,displayName,title,bio,philosophy,communityTone,rating,repeatRate,pastEvents,recurringAttendees,status';
 
@@ -31,6 +32,10 @@ export function selectPublicEventById(client: HausyApiClient, id: string) {
 
 export function selectCreatorsByIds(client: HausyApiClient, creatorIds: string[]) {
   return client.from<CreatorRow[]>('creators').select(CREATOR_SELECT).in('id', creatorIds);
+}
+
+export function selectProfileAvatarsByIds(client: HausyApiClient, profileIds: string[]) {
+  return client.from<ProfileAvatarRow[]>('profiles').select('id,avatarUrl').in('id', profileIds);
 }
 
 export function selectVenuesByIds(client: HausyApiClient, venueIds: string[]) {
@@ -56,7 +61,7 @@ export function selectEventPromptsByEventIds(client: HausyApiClient, eventIds: s
 export function selectEventAttendeePreviewsByEventIds(client: HausyApiClient, eventIds: string[]) {
   return client
     .from<EventAttendeePreviewRow[]>('eventAttendeePreviews')
-    .select('id,eventId,displayName,role,signal,status,initials,accent')
+    .select('id,eventId,avatarUrl,displayName,role,signal,status,initials,accent')
     .in('eventId', eventIds);
 }
 
@@ -111,16 +116,22 @@ export function insertEvent(client: HausyApiClient, input: {
   category: string;
   creatorId: string;
   imageUrl: string;
+  occurrenceNumber?: number;
   posterText: string;
   priceLabel: string;
   status: string;
   title: string;
+  seriesKey?: string;
   venueId: string;
   vibe: string;
 }) {
   return client
     .from<EventInsertRow>('events')
-    .insert(input)
+    .insert({
+      ...input,
+      occurrenceNumber: input.occurrenceNumber ?? 1,
+      seriesKey: input.seriesKey ?? input.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    })
     .select('id,creatorId,status,title')
     .single();
 }

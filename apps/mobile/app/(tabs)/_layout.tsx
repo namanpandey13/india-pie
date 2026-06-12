@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
 import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useAuthSession } from '@/lib/auth-session';
 import { componentTokens, typographyRoles, useThemeColors } from '@hausy/ui';
@@ -54,28 +55,41 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="host"
+        name="vizz"
         options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="saved"
-        options={{
-          title: 'Saved',
+          title: 'Vizz',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               size={componentTokens.controls.tabIconSize}
-              name={focused ? 'bookmark' : 'bookmark-outline'}
+              name={focused ? 'sparkles' : 'sparkles-outline'}
               color={color}
             />
           ),
         }}
       />
       <Tabs.Screen
+        name="host"
+        options={{
+          title: 'Create',
+          tabBarButton: ({ accessibilityState, onLongPress, onPress }) => (
+            <Pressable
+              accessibilityLabel="Create an event"
+              accessibilityRole="button"
+              accessibilityState={accessibilityState}
+              onLongPress={onLongPress}
+              onPress={onPress}
+              style={styles.createTab}>
+              <View style={[styles.createButton, { backgroundColor: colors.brand }]}>
+                <Ionicons name="add" size={28} color={colors.black} />
+              </View>
+            </Pressable>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chats',
+          title: 'Rooms',
           tabBarBadge: '',
           tabBarBadgeStyle: {
             backgroundColor: colors.brand,
@@ -95,6 +109,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen name="saved" options={{ href: null }} />
       <Tabs.Screen
         name="profile"
         options={{
@@ -111,3 +126,19 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  createButton: {
+    alignItems: 'center',
+    borderRadius: 999,
+    height: 52,
+    justifyContent: 'center',
+    width: 52,
+  },
+  createTab: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    transform: [{ translateY: -12 }],
+  },
+});

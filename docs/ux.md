@@ -668,3 +668,28 @@ time spent scrolling.
 
 Success metric IS:
 real-world recurring participation.
+
+---
+
+# 19. CURRENT EVENT DETAIL RULES
+
+These rules override older event-page hierarchy guidance in this document.
+
+- Keep event detail visually lean and image-led.
+- Order content as: hero image, event identity, date/place, RSVP comment, host, attendees, visual prompts.
+- RSVP should feel like sending a like with a comment, not completing a booking form.
+- Place RSVP near the top; do not require deep scrolling before expressing interest.
+- Do not add dedicated trust, logistics, reviews, or experience sections when they repeat existing information.
+- Reviews appear only when recurring events or previous editions make them meaningful.
+- Use one concise section label. Do not pair small eyebrows with redundant large section titles.
+- Do not place divider lines above the event title.
+- Write date and place naturally; avoid uppercase labels such as WHEN and WHERE.
+- Use the brand color for the primary action and rare emphasis only.
+- Prefer whitespace, photography, and typography over bordered containers.
+- Keep the first hero image slightly shorter than a full-screen poster.
+- Host details are directly tappable; do not add a separate View profile button.
+- Use Hinge-inspired image and prompt moments to add personality without repeating the event description.
+- Every piece of text must earn its place. Remove explanatory copy that the interface already communicates.
+- Event recurrence is explicit data, not inferred from names. First editions display New; later editions display the number of previous occurrences as a compact honor mark.
+- Recurrence marks must be consistent across Explore, Vizz, event cards, and event detail.
+- Segment event detail with strong single labels, generous spacing, and image rhythm. Do not use paired eyebrow/title headings or repeated divider boxes.
