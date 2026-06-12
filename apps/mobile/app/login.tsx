@@ -1,4 +1,4 @@
-import { signInWithPassword, signUpWithPassword } from '@/lib/auth';
+import { useAuthSession } from '@/lib/auth-session';
 import { GhostButton, Input, PrimaryButton, typographyRoles, useThemeColors } from '@hausy/ui';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
   const colors = useThemeColors();
+  const { signInWithDummy } = useAuthSession();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,17 +41,10 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const result =
-        mode === 'login'
-          ? await signInWithPassword(normalizedEmail, password)
-          : await signUpWithPassword(normalizedEmail, password);
-
-      if (result.error) {
-        setError(result.error.message);
-        return;
-      }
-
+      await signInWithDummy(normalizedEmail);
       router.replace('/explore');
+    } catch {
+      setError('Could not start the demo session.');
     } finally {
       setIsLoading(false);
     }
