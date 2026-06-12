@@ -358,6 +358,7 @@ export const hostDraftSchema = z.object({
   template: z.string(),
   title: z.string(),
   capacity: z.string(),
+  coverImageUrl: z.string().optional(),
   location: z.string().optional(),
   startsAt: z.string().optional(),
   vibe: z.string().optional(),

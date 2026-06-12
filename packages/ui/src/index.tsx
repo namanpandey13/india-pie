@@ -8,6 +8,7 @@ export * from './primitives/headers';
 export * from './primitives/icon-button';
 export * from './primitives/input';
 export * from './primitives/list-row';
+export * from './primitives/loader';
 export * from './primitives/metric';
 export * from './primitives/pill';
 export * from './primitives/screen';

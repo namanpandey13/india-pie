@@ -1,17 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { listMyRsvpRequests, listMyTickets, sendPlanInboxMessage } from '@hausy/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { rsvpStatusLabel } from '@hausy/types';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Card, Header, Screen, SectionTitle, typographyRoles, useThemeColors } from '@hausy/ui';
+import { Card, Header, Loader, Screen, SectionTitle, typographyRoles, useThemeColors } from '@hausy/ui';
 import { useChatOverview } from '@/features/chat/use-chat-overview';
 import { useAppStore } from '@/state/app-store';
 
 export default function ChatScreen() {
   const colors = useThemeColors();
+  const { eventId } = useLocalSearchParams<{ eventId?: string }>();
   const [activeSection, setActiveSection] = useState<'chats' | 'rsvps' | 'tickets'>('chats');
   const { error, isLoading, threads } = useChatOverview();
   const ticketsQuery = useQuery({
@@ -105,18 +106,14 @@ export default function ChatScreen() {
         </View>
       ) : null}
 
-      {activeSection === 'chats' && isLoading ? (
-        <Card style={styles.chatCard}>
-          <Text style={[styles.chatTitle, { color: colors.ink }]}>Loading plan inbox.</Text>
-        </Card>
-      ) : null}
+      {activeSection === 'chats' && isLoading ? <Loader label="Opening rooms" /> : null}
       {activeSection === 'chats' && error ? (
         <Card style={styles.chatCard}>
           <Text style={[styles.chatTitle, { color: colors.ink }]}>Plan Inbox is unavailable.</Text>
           <Text style={[styles.message, { backgroundColor: colors.surfaceAlt, color: colors.ink }]}>{error.message}</Text>
         </Card>
       ) : null}
-      {activeSection === 'chats' ? threads.map((thread) => (
+      {activeSection === 'chats' ? [...threads].sort((a, b) => Number(b.eventId === eventId) - Number(a.eventId === eventId)).map((thread) => (
           <Card key={thread.id} style={styles.chatCard}>
             <View style={styles.chatTop}>
               <View style={styles.chatCopy}>

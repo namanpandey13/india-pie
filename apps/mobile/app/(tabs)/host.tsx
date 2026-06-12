@@ -1,447 +1,405 @@
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-
+import { useEffect, useState, type ComponentProps } from 'react';
 import {
-  Card,
-  GhostButton,
-  Header,
-  Pill,
-  PrimaryButton,
-  Screen,
-  SectionTitle,
-  TopBar,
-  typographyRoles,
-  useThemeColors,
-} from '@hausy/ui';
-import { eventStatusLabel, rsvpStatusLabel } from '@hausy/types';
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+
+import { Loader, PrimaryButton, Screen, typographyRoles, useThemeColors } from '@hausy/ui';
 import { useHostDraft } from '@/features/host/use-host-draft';
+
+const categories = ['Sports', 'Party', 'Art', 'Tech', 'Food', 'Wellness'];
+const prompts = [
+  'What will people remember afterward?',
+  'Who will feel most at home here?',
+  'What makes this different from a usual night out?',
+];
+
+type PickerTarget = 'startDate' | 'startTime' | 'endDate' | 'endTime';
 
 export default function HostScreen() {
   const colors = useThemeColors();
-  const {
-    about,
-    capacity,
-    draft,
-    error,
-    events,
-    hostDraft,
-    isPublishing,
-    location,
-    publishHostDraft,
-    requests,
-    reviewRequest,
-    saveHostDraft,
-    setAbout,
-    setCapacity,
-    setEventStatus,
-    setLocation,
-    setStartsAt,
-    setTemplate,
-    setTitle,
-    setVibe,
-    setVisibility,
-    startsAt,
-    template,
-    templates,
-    title,
-    vibe,
-    visibility,
-  } = useHostDraft();
+  const host = useHostDraft();
+  const initialStart = parseDraftDate(host.startsAt);
+  const [step, setStep] = useState(1);
+  const [category, setCategory] = useState('Art');
+  const [requireApproval, setRequireApproval] = useState(true);
+  const [price, setPrice] = useState<'Free' | 'Paid'>('Free');
+  const [prompt, setPrompt] = useState(prompts[0]);
+  const [promptAnswer, setPromptAnswer] = useState('');
+  const [invitees, setInvitees] = useState('');
+  const [startAt, setStartAt] = useState(initialStart);
+  const [endAt, setEndAt] = useState(new Date(initialStart.getTime() + 60 * 60 * 1000));
+  const [iosPicker, setIosPicker] = useState<PickerTarget | null>(null);
+
+  const publish = () => host.publishHostDraft({
+    template: category,
+    startsAt: startAt.toISOString(),
+    vibe: promptAnswer || host.vibe,
+    visibility: host.visibility === 'curated' ? 'public' : host.visibility,
+  });
+
+  useEffect(() => {
+    if (host.publishedEventId) {
+      Alert.alert('Event published', 'Your event is now visible to other Hausy users.', [
+        {
+          text: 'View event',
+          onPress: () => router.replace({ pathname: '/event/[id]', params: { id: host.publishedEventId as string } }),
+        },
+      ]);
+    }
+  }, [host.publishedEventId]);
+
+  if (host.isLoadingDashboard) {
+    return <Loader fill />;
+  }
+
+  const pickCover = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Photo access needed', 'Allow photo access to choose an event cover.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      mediaTypes: ['images'],
+      quality: 0.82,
+    });
+    if (!result.canceled) {
+      host.setCoverImageUrl(result.assets[0].uri);
+    }
+  };
+
+  const updatePicker = (target: PickerTarget, value: Date) => {
+    const current = target.startsWith('start') ? startAt : endAt;
+    const next = new Date(current);
+    if (target.endsWith('Date')) {
+      next.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
+    } else {
+      next.setHours(value.getHours(), value.getMinutes(), 0, 0);
+    }
+    if (target.startsWith('start')) {
+      setStartAt(next);
+      host.setStartsAt(next.toISOString());
+      if (next >= endAt) setEndAt(new Date(next.getTime() + 60 * 60 * 1000));
+    } else {
+      setEndAt(next > startAt ? next : new Date(startAt.getTime() + 60 * 60 * 1000));
+    }
+  };
+
+  const openPicker = (target: PickerTarget) => {
+    const value = target.startsWith('start') ? startAt : endAt;
+    const mode = target.endsWith('Date') ? 'date' : 'time';
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({
+        value,
+        mode,
+        is24Hour: false,
+        minimumDate: target.endsWith('Date') ? new Date() : undefined,
+        onChange: (_event, selected) => selected && updatePicker(target, selected),
+      });
+    } else {
+      setIosPicker(target);
+    }
+  };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.select({ ios: 'padding', default: undefined })}
-      style={[styles.flex, { backgroundColor: colors.bg }]}>
+    <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', default: undefined })} style={[styles.flex, { backgroundColor: colors.bg }]}>
       <Screen>
-        <TopBar onChatPress={() => router.push('/chat')} onNotificationPress={() => router.push('/modal')} />
-        <Header
-          eyebrow="creator studio"
-          title="Host, approve, and announce from one place."
-          subtitle="Post a plan instantly, review guest requests, confirm the event, and keep updates in Hausy chat."
-        />
-
-        <SectionTitle title="Start with a format" />
-        <View style={styles.templateGrid}>
-          {templates.map((item) => (
-            <Pill
-              key={item}
-              label={item}
-              active={item === template}
-              onPress={() => setTemplate(item)}
-              tone={item === 'builders dinner' ? 'yellow' : 'lime'}
-            />
-          ))}
+        <View style={styles.header}>
+          <Text style={[styles.eyebrow, { color: colors.muted }]}>Create event</Text>
+          <Text style={[styles.title, { color: colors.ink }]}>
+            {step === 1 ? 'The essentials' : step === 2 ? 'Tickets and details' : 'Invite people'}
+          </Text>
+          <View style={styles.progress}>
+            {[1, 2, 3].map((item) => <View key={item} style={[styles.progressBar, { backgroundColor: item <= step ? colors.ink : colors.line }]} />)}
+          </View>
         </View>
 
-        <Card style={styles.formCard}>
-          <Text style={[styles.label, { color: colors.faint }]}>Plan title</Text>
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Name your plan"
-            placeholderTextColor={colors.faint}
-            style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
-          />
+        {step === 1 ? (
+          <View style={styles.form}>
+            <Pressable onPress={pickCover} style={[styles.coverPicker, { backgroundColor: colors.surfaceAlt }]}>
+              {host.hostDraft.coverImageUrl ? (
+                <>
+                  <Image source={host.hostDraft.coverImageUrl} contentFit="cover" style={StyleSheet.absoluteFill} />
+                  <View style={[styles.changeCover, { backgroundColor: colors.overlayMedium }]}>
+                    <Ionicons name="image-outline" size={18} color={colors.white} />
+                  </View>
+                </>
+              ) : <Ionicons name="image-outline" size={25} color={colors.muted} />}
+            </Pressable>
 
-          <Text style={[styles.label, { color: colors.faint }]}>Where</Text>
-          <View style={[styles.inputRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
-            <Ionicons name="location-outline" size={20} color={colors.brand} />
-            <TextInput
-              value={location}
-              onChangeText={setLocation}
-              placeholder="Venue or locality"
-              placeholderTextColor={colors.faint}
-              style={[styles.inputInline, { color: colors.ink }]}
-            />
+            <LineField label="Event name" value={host.title} onChangeText={host.setTitle} />
+
+            <View style={[styles.schedule, { borderColor: colors.line }]}>
+              <ScheduleRow label="Start" value={startAt} onDate={() => openPicker('startDate')} onTime={() => openPicker('startTime')} />
+              <View style={[styles.rowDivider, { backgroundColor: colors.line }]} />
+              <ScheduleRow label="End" value={endAt} onDate={() => openPicker('endDate')} onTime={() => openPicker('endTime')} />
+            </View>
+
+            <LineField icon="location-outline" label="Location" value={host.location} onChangeText={host.setLocation} />
+            <LineField icon="document-text-outline" label="Description" value={host.about} onChangeText={host.setAbout} multiline />
           </View>
+        ) : null}
 
-          <View style={styles.twoCol}>
-            <View style={styles.fieldHalf}>
-              <Text style={[styles.label, { color: colors.faint }]}>When</Text>
-              <View style={[styles.inputRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
-                <Ionicons name="time-outline" size={18} color={colors.brand} />
-                <TextInput
-                  value={startsAt}
-                  onChangeText={setStartsAt}
-                  placeholder="2026-06-12 19:30"
-                  placeholderTextColor={colors.faint}
-                  style={[styles.inputInline, { color: colors.ink }]}
+        {step === 2 ? (
+          <View style={styles.form}>
+            <ChoiceGroup label="Category" values={categories} selected={category} onSelect={setCategory} />
+
+            <SettingSection label="Ticketing">
+              <SettingRow icon="lock-closed-outline" label="Require approval">
+                <Switch
+                  value={requireApproval}
+                  onValueChange={setRequireApproval}
+                  trackColor={{ false: colors.line, true: colors.ink }}
+                  thumbColor={colors.white}
                 />
-              </View>
-            </View>
-            <View style={styles.fieldHalf}>
-              <Text style={[styles.label, { color: colors.faint }]}>Capacity</Text>
-              <TextInput
-                keyboardType="number-pad"
-                value={capacity}
-                onChangeText={setCapacity}
-                style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
-              />
-            </View>
+              </SettingRow>
+              <SettingRow icon="ticket-outline" label="Price">
+                <ValueToggle values={['Free', 'Paid']} selected={price} onSelect={(value) => setPrice(value as typeof price)} />
+              </SettingRow>
+            </SettingSection>
+
+            <SettingSection label="Options">
+              <SettingRow icon="globe-outline" label="Visibility">
+                <ValueToggle values={['Public', 'Private']} selected={titleCase(host.visibility)} onSelect={(value) => host.setVisibility(value.toLowerCase() as 'public' | 'private')} />
+              </SettingRow>
+              <SettingRow icon="people-outline" label="Capacity">
+                <TextInput
+                  keyboardType="number-pad"
+                  value={host.capacity === '0' ? '' : host.capacity}
+                  onChangeText={(value) => host.setCapacity(value || '0')}
+                  placeholder="Unlimited"
+                  placeholderTextColor={colors.muted}
+                  style={[styles.capacityInput, { color: colors.ink }]}
+                />
+              </SettingRow>
+            </SettingSection>
+
+            <Text style={[styles.groupLabel, { color: colors.ink }]}>Event prompt</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptRow}>
+              {prompts.map((item) => (
+                <Pressable key={item} onPress={() => setPrompt(item)} style={[styles.prompt, { borderColor: prompt === item ? colors.ink : colors.line }]}>
+                  <Text style={[styles.promptText, { color: colors.ink }]}>{item}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+            <LineField label={prompt} value={promptAnswer} onChangeText={setPromptAnswer} multiline />
           </View>
-
-          <Text style={[styles.label, { color: colors.faint }]}>Vibe</Text>
-          <TextInput
-            value={vibe}
-            onChangeText={setVibe}
-            placeholder="Curated dinner, no pitch night"
-            placeholderTextColor={colors.faint}
-            style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
-          />
-
-          <Text style={[styles.label, { color: colors.faint }]}>About</Text>
-          <TextInput
-            value={about}
-            onChangeText={setAbout}
-            multiline
-            placeholder="What happens, who it is for, and why guests should request entry."
-            placeholderTextColor={colors.faint}
-            style={[styles.textArea, { backgroundColor: colors.surfaceAlt, borderColor: colors.line, color: colors.ink }]}
-          />
-        </Card>
-
-        <SectionTitle title="Guest list control" action="Trust layer" />
-        <Card style={styles.visibilityCard}>
-          <OptionRow
-            active={visibility === 'public'}
-            title="Public"
-            body="Anyone in the launch region can request to join."
-            onPress={() => setVisibility('public')}
-          />
-          <OptionRow
-            active={visibility === 'curated'}
-            title="Curated"
-            body="You approve guests by LinkedIn, Instagram, age range, vibe, and mutual context."
-            onPress={() => setVisibility('curated')}
-          />
-          <OptionRow
-            active={visibility === 'private'}
-            title="Private"
-            body="Only people with the invite link can see the plan."
-            onPress={() => setVisibility('private')}
-          />
-        </Card>
-
-        <SectionTitle title="Creator follow-through" action="Self-serve" />
-        <Card style={styles.promptCard}>
-          <Checklist label="Confirm venue before review" done />
-          <Checklist label="Share route or table proof before event" done />
-          <Checklist label="Keep plan updates inside Hausy Plan Inbox" done />
-          <Checklist label="Post-event reviews affect creator rank" done />
-        </Card>
-
-        <SectionTitle title="Guest fit questions" action="Pre-chat seed" />
-        <Card style={styles.promptCard}>
-          <Text style={[styles.prompt, { color: colors.muted }]}>What brings you to this plan?</Text>
-          <Text style={[styles.prompt, { color: colors.muted }]}>Are you coming solo or with a friend?</Text>
-          <Text style={[styles.prompt, { color: colors.muted }]}>What would make this feel worth leaving home for?</Text>
-          <GhostButton label="Edit prompts" icon="pencil-outline" onPress={saveHostDraft} />
-        </Card>
-
-        {hostDraft.lastSavedAt ? <Text style={[styles.savedStatus, { color: colors.brand }]}>{hostDraft.lastSavedAt}</Text> : null}
-        {error ? (
-          <Card style={styles.previewCard}>
-            <Text style={[styles.previewTitle, { color: colors.ink }]}>Host action failed</Text>
-            <Text style={[styles.previewBody, { color: colors.muted }]}>{error.message}</Text>
-          </Card>
         ) : null}
-        {hostDraft.submittedForReview ? (
-          <Card style={styles.previewCard}>
-            <Text style={[styles.previewTitle, { color: colors.ink }]}>{title}</Text>
-            <Text style={[styles.previewBody, { color: colors.muted }]}>
-              {template} - {visibility} - {capacity} guests. Ready to post as a planning event.
-            </Text>
-          </Card>
+
+        {step === 3 ? (
+          <View style={styles.form}>
+            <View style={[styles.inviteHero, { backgroundColor: colors.surfaceAlt }]}>
+              <Ionicons name="people-outline" size={28} color={colors.ink} />
+              <Text style={[styles.inviteTitle, { color: colors.ink }]}>Invite people</Text>
+            </View>
+            <LineField label="Emails or usernames" value={invitees} onChangeText={setInvitees} multiline />
+          </View>
         ) : null}
-        <PrimaryButton
-          label={`Save ${draft?.status ?? 'draft'}`}
-          icon="document-text-outline"
-          tone="blue"
-          onPress={saveHostDraft}
-        />
-        <PrimaryButton label={isPublishing ? 'Posting plan...' : 'Post event'} icon="send-outline" onPress={publishHostDraft} />
 
-        <SectionTitle title="Guest requests" action={`${requests.length}`} />
-        <View style={styles.stackGap}>
-          {requests.map((request) => (
-            <Card key={request.id} style={styles.requestCard}>
-              <View style={styles.requestTop}>
-                <View style={styles.requestAvatar}>
-                  <Text style={[styles.requestInitials, { color: colors.ink }]}>{request.guestInitials ?? 'HG'}</Text>
-                </View>
-                <View style={styles.requestCopy}>
-                  <Text style={[styles.previewTitle, { color: colors.ink }]}>{request.guestName}</Text>
-                  <Text style={[styles.previewBody, { color: colors.muted }]}>{request.eventTitle}</Text>
-                </View>
-                <Text style={[styles.statusText, { color: colors.brand }]}>{rsvpStatusLabel[request.status]}</Text>
-              </View>
-              <Text style={[styles.previewBody, { color: colors.ink }]}>{request.note ?? 'No note yet.'}</Text>
-              <Text style={[styles.previewBody, { color: colors.muted }]}>
-                {request.guestCity ?? 'City missing'} - {request.guestBio ?? 'Profile bio missing'}
-              </Text>
-              <View style={styles.actionRow}>
-                <GhostButton label="Reject" icon="close-circle-outline" onPress={() => reviewRequest(request.id, 'declined')} />
-                <PrimaryButton label="Accept" icon="checkmark-circle-outline" onPress={() => reviewRequest(request.id, 'accepted')} />
-              </View>
-            </Card>
-          ))}
-          {requests.length === 0 ? (
-            <Card style={styles.previewCard}>
-              <Text style={[styles.previewTitle, { color: colors.ink }]}>No guest requests yet.</Text>
-              <Text style={[styles.previewBody, { color: colors.muted }]}>Requests appear here as soon as guests request entry.</Text>
-            </Card>
-          ) : null}
-        </View>
-
-        <SectionTitle title="Your hosted events" action={`${events.length}`} />
-        <View style={styles.stackGap}>
-          {events.map((event) => (
-            <Card key={event.id} style={styles.previewCard}>
-              <Text style={[styles.previewTitle, { color: colors.ink }]}>{event.title}</Text>
-              <Text style={[styles.previewBody, { color: colors.muted }]}>
-                {eventStatusLabel[event.status]} - {event.requestCount} requests - {event.acceptedCount} accepted
-              </Text>
-              <View style={styles.actionRow}>
-                <GhostButton label="Planning" icon="time-outline" onPress={() => setEventStatus(event.id, 'planning')} />
-                <GhostButton label="Confirmed" icon="checkmark-circle-outline" onPress={() => setEventStatus(event.id, 'confirmed')} />
-                <GhostButton label="Cancel" icon="close-circle-outline" onPress={() => setEventStatus(event.id, 'cancelled')} />
-              </View>
-            </Card>
-          ))}
+        {host.error ? <Text style={[styles.error, { color: colors.ink }]}>{host.error.message}</Text> : null}
+        <View style={styles.footer}>
+          {step > 1 ? <Pressable onPress={() => setStep((value) => value - 1)} style={styles.back}><Text style={[styles.backText, { color: colors.ink }]}>Back</Text></Pressable> : null}
+          {step < 3 ? (
+            <PrimaryButton label="Continue" icon="arrow-forward-outline" onPress={() => setStep((value) => value + 1)} style={styles.primary} />
+          ) : (
+            <>
+              <Pressable onPress={publish} style={styles.skip}><Text style={[styles.backText, { color: colors.muted }]}>Skip</Text></Pressable>
+              <PrimaryButton
+                label={host.isPublishing ? 'Publishing...' : 'Publish'}
+                loading={host.isPublishing}
+                icon="send-outline"
+                onPress={host.hostDraft.coverImageUrl && host.title.trim() && host.location.trim() ? publish : undefined}
+                style={styles.primary}
+              />
+            </>
+          )}
         </View>
       </Screen>
+
+      {Platform.OS === 'ios' && iosPicker ? (
+        <Modal transparent animationType="fade">
+          <Pressable onPress={() => setIosPicker(null)} style={[styles.modalBackdrop, { backgroundColor: colors.overlayMedium }]}>
+            <Pressable style={[styles.pickerSheet, { backgroundColor: colors.surface }]}>
+              <View style={styles.pickerHeader}>
+                <Text style={[styles.groupLabel, { color: colors.ink }]}>{iosPicker.startsWith('start') ? 'Start' : 'End'}</Text>
+                <Pressable onPress={() => setIosPicker(null)}><Text style={[styles.done, { color: colors.ink }]}>Done</Text></Pressable>
+              </View>
+              <DateTimePicker
+                display={iosPicker.endsWith('Date') ? 'inline' : 'spinner'}
+                mode={iosPicker.endsWith('Date') ? 'date' : 'time'}
+                minimumDate={iosPicker.endsWith('Date') ? new Date() : undefined}
+                value={iosPicker.startsWith('start') ? startAt : endAt}
+                onChange={(_event, selected) => selected && updatePicker(iosPicker, selected)}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
 
-function OptionRow({
-  active,
-  title,
-  body,
-  onPress,
-}: {
-  active: boolean;
-  title: string;
-  body: string;
-  onPress: () => void;
-}) {
+function LineField({ label, icon, multiline, ...props }: ComponentProps<typeof TextInput> & { label: string; icon?: keyof typeof Ionicons.glyphMap }) {
   const colors = useThemeColors();
-
   return (
-    <Pressable
-      style={[
-        styles.option,
-        { borderColor: colors.line },
-        active && { backgroundColor: colors.surfaceAlt, borderColor: colors.brand },
-      ]}
-      onPress={onPress}>
-      <Ionicons
-        name={active ? 'radio-button-on' : 'radio-button-off'}
-        size={22}
-        color={active ? colors.brand : colors.muted}
+    <View style={[styles.lineField, { borderColor: colors.line }]}>
+      {icon ? <Ionicons name={icon} size={19} color={colors.muted} /> : null}
+      <TextInput
+        {...props}
+        multiline={multiline}
+        placeholder={label}
+        placeholderTextColor={colors.muted}
+        style={[styles.input, multiline && styles.textArea, { color: colors.ink }]}
       />
-      <View style={styles.optionCopy}>
-        <Text style={[styles.optionTitle, { color: colors.ink }]}>{title}</Text>
-        <Text style={[styles.optionBody, { color: colors.muted }]}>{body}</Text>
-      </View>
-    </Pressable>
-  );
-}
-
-function Checklist({ label, done }: { label: string; done?: boolean }) {
-  const colors = useThemeColors();
-
-  return (
-    <View style={styles.checkRow}>
-      <Ionicons name={done ? 'checkmark-circle' : 'ellipse-outline'} size={19} color={colors.brand} />
-      <Text style={[styles.checkText, { color: colors.ink }]}>{label}</Text>
     </View>
   );
 }
 
+function ScheduleRow({ label, value, onDate, onTime }: { label: string; value: Date; onDate: () => void; onTime: () => void }) {
+  const colors = useThemeColors();
+  return (
+    <View style={styles.scheduleRow}>
+      <Text style={[styles.scheduleLabel, { color: colors.ink }]}>{label}</Text>
+      <Pressable onPress={onDate} style={[styles.dateButton, { backgroundColor: colors.surfaceAlt }]}>
+        <Text style={[styles.dateText, { color: colors.ink }]}>{formatDate(value)}</Text>
+      </Pressable>
+      <Pressable onPress={onTime} style={[styles.dateButton, { backgroundColor: colors.surfaceAlt }]}>
+        <Text style={[styles.dateText, { color: colors.ink }]}>{formatTime(value)}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function SettingSection({ label, children }: { label: string; children: React.ReactNode }) {
+  const colors = useThemeColors();
+  return (
+    <View style={styles.settingSection}>
+      <Text style={[styles.groupLabel, { color: colors.ink }]}>{label}</Text>
+      <View style={[styles.settingGroup, { borderColor: colors.line }]}>{children}</View>
+    </View>
+  );
+}
+
+function SettingRow({ icon, label, children }: { icon: keyof typeof Ionicons.glyphMap; label: string; children: React.ReactNode }) {
+  const colors = useThemeColors();
+  return (
+    <View style={[styles.settingRow, { borderColor: colors.line }]}>
+      <Ionicons name={icon} size={19} color={colors.muted} />
+      <Text style={[styles.settingLabel, { color: colors.ink }]}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function ValueToggle({ values, selected, onSelect }: { values: string[]; selected: string; onSelect: (value: string) => void }) {
+  const colors = useThemeColors();
+  return (
+    <View style={styles.valueToggle}>
+      {values.map((value) => (
+        <Pressable key={value} onPress={() => onSelect(value)} style={[styles.valueChoice, selected === value && { backgroundColor: colors.ink }]}>
+          <Text style={[styles.valueText, { color: selected === value ? colors.bg : colors.muted }]}>{value}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+function ChoiceGroup({ label, values, selected, onSelect }: { label: string; values: string[]; selected: string; onSelect: (value: string) => void }) {
+  const colors = useThemeColors();
+  return (
+    <View style={styles.choiceGroup}>
+      <Text style={[styles.groupLabel, { color: colors.ink }]}>{label}</Text>
+      <View style={styles.choices}>
+        {values.map((value) => (
+          <Pressable key={value} onPress={() => onSelect(value)} style={[styles.choice, { backgroundColor: selected === value ? colors.ink : colors.surfaceAlt }]}>
+            <Text style={[styles.choiceText, { color: selected === value ? colors.bg : colors.ink }]}>{value}</Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function parseDraftDate(value: string) {
+  const parsed = value ? new Date(value) : new Date(Date.now() + 24 * 60 * 60 * 1000);
+  if (Number.isNaN(parsed.getTime())) return new Date(Date.now() + 24 * 60 * 60 * 1000);
+  parsed.setSeconds(0, 0);
+  return parsed;
+}
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', weekday: 'short' }).format(value);
+}
+
+function formatTime(value: Date) {
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(value);
+}
+
+function titleCase(value: string) {
+  return value[0].toUpperCase() + value.slice(1);
+}
+
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
-  templateGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  formCard: {
-    gap: 12,
-  },
-  label: {
-    ...typographyRoles.caption,
-  },
-  input: {
-    borderRadius: 14,
-    borderWidth: 1,
-    ...typographyRoles.bodyStrong,
-    minHeight: 48,
-    paddingHorizontal: 12,
-  },
-  inputRow: {
-    alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 9,
-    minHeight: 48,
-    paddingHorizontal: 12,
-  },
-  inputStatic: {
-    flex: 1,
-    ...typographyRoles.bodyStrong,
-  },
-  inputInline: {
-    flex: 1,
-    ...typographyRoles.bodyStrong,
-    minHeight: 44,
-    minWidth: 0,
-    paddingVertical: 0,
-  },
-  textArea: {
-    borderRadius: 14,
-    borderWidth: 1,
-    ...typographyRoles.bodyStrong,
-    minHeight: 104,
-    padding: 12,
-    textAlignVertical: 'top',
-  },
-  twoCol: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  fieldHalf: {
-    flex: 1,
-    gap: 8,
-  },
-  visibilityCard: {
-    gap: 10,
-  },
-  option: {
-    alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 12,
-    padding: 12,
-  },
-  optionActive: {
-  },
-  optionCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  optionTitle: {
-    ...typographyRoles.label,
-  },
-  optionBody: {
-    ...typographyRoles.caption,
-  },
-  promptCard: {
-    gap: 10,
-  },
-  prompt: {
-    ...typographyRoles.body,
-  },
-  checkRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 9,
-  },
-  checkText: {
-    flex: 1,
-    ...typographyRoles.bodyStrong,
-  },
-  savedStatus: {
-    ...typographyRoles.caption,
-    textAlign: 'center',
-  },
-  previewCard: {
-    gap: 8,
-  },
-  previewTitle: {
-    ...typographyRoles.h3,
-  },
-  previewBody: {
-    ...typographyRoles.body,
-  },
-  stackGap: {
-    gap: 12,
-  },
-  requestCard: {
-    gap: 12,
-  },
-  requestTop: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  requestAvatar: {
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 999,
-    height: 42,
-    justifyContent: 'center',
-    width: 42,
-  },
-  requestInitials: {
-    ...typographyRoles.caption,
-  },
-  requestCopy: {
-    flex: 1,
-    gap: 2,
-    minWidth: 0,
-  },
-  statusText: {
-    ...typographyRoles.caption,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
+  flex: { flex: 1 },
+  header: { gap: 10, paddingTop: 8 },
+  eyebrow: { ...typographyRoles.caption },
+  title: { ...typographyRoles.h1 },
+  progress: { flexDirection: 'row', gap: 6, paddingTop: 8 },
+  progressBar: { borderRadius: 99, flex: 1, height: 3 },
+  form: { gap: 20 },
+  coverPicker: { alignItems: 'center', borderRadius: 20, height: 154, justifyContent: 'center', overflow: 'hidden' },
+  changeCover: { alignItems: 'center', borderRadius: 999, bottom: 12, height: 38, justifyContent: 'center', position: 'absolute', right: 12, width: 38 },
+  lineField: { alignItems: 'flex-start', borderBottomWidth: 1, flexDirection: 'row', gap: 10 },
+  input: { ...typographyRoles.bodyStrong, flex: 1, minHeight: 52, paddingVertical: 12 },
+  textArea: { minHeight: 90, textAlignVertical: 'top' },
+  schedule: { borderBottomWidth: 1, borderTopWidth: 1, paddingVertical: 5 },
+  scheduleRow: { alignItems: 'center', flexDirection: 'row', gap: 8, minHeight: 58 },
+  scheduleLabel: { ...typographyRoles.label, flex: 1 },
+  dateButton: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10 },
+  dateText: { ...typographyRoles.caption },
+  rowDivider: { height: StyleSheet.hairlineWidth, marginLeft: 54 },
+  choiceGroup: { gap: 10 },
+  groupLabel: { ...typographyRoles.h3 },
+  choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  choice: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 9 },
+  choiceText: { ...typographyRoles.caption },
+  settingSection: { gap: 10 },
+  settingGroup: { borderBottomWidth: 1, borderTopWidth: 1 },
+  settingRow: { alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: 11, minHeight: 60 },
+  settingLabel: { ...typographyRoles.bodyStrong, flex: 1 },
+  valueToggle: { flexDirection: 'row', gap: 3 },
+  valueChoice: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
+  valueText: { ...typographyRoles.caption },
+  capacityInput: { ...typographyRoles.bodyStrong, minWidth: 90, paddingVertical: 10, textAlign: 'right' },
+  promptRow: { gap: 10, paddingRight: 18 },
+  prompt: { borderRadius: 18, borderWidth: 1, padding: 15, width: 220 },
+  promptText: { ...typographyRoles.bodyStrong },
+  inviteHero: { alignItems: 'center', borderRadius: 22, gap: 10, padding: 28 },
+  inviteTitle: { ...typographyRoles.h2 },
+  error: { ...typographyRoles.caption, textAlign: 'center' },
+  footer: { alignItems: 'center', flexDirection: 'row', gap: 12, paddingBottom: 20 },
+  primary: { flex: 1 },
+  back: { paddingHorizontal: 8, paddingVertical: 14 },
+  skip: { paddingVertical: 14 },
+  backText: { ...typographyRoles.label },
+  modalBackdrop: { flex: 1, justifyContent: 'flex-end' },
+  pickerSheet: { borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 18 },
+  pickerHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  done: { ...typographyRoles.label, padding: 8 },
 });

@@ -692,4 +692,17 @@ These rules override older event-page hierarchy guidance in this document.
 - Every piece of text must earn its place. Remove explanatory copy that the interface already communicates.
 - Event recurrence is explicit data, not inferred from names. First editions display New; later editions display the number of previous occurrences as a compact honor mark.
 - Recurrence marks must be consistent across Explore, Vizz, event cards, and event detail.
+- Explore features the public event with the highest occurrence number. Newer events break ties.
 - Segment event detail with strong single labels, generous spacing, and image rhythm. Do not use paired eyebrow/title headings or repeated divider boxes.
+
+# 20. LOADING, EVENT ACTIONS & CREATION
+
+- Loading states use one quiet, neutral spinner on the page surface. Never put loading copy inside a chunky card.
+- Loading labels are optional, short, and factual. Avoid playful animation and brand-color pulsing.
+- Event detail has one dominant Register action. Contact and More are secondary actions beside it.
+- Contact opens the host's event-linked room. More contains share, report, and reversible registration actions.
+- Attendees live beneath the host as overlapping portraits. The expanded list has a fixed height, scrolls internally, and keeps follow/social actions close to each person.
+- Follow belongs inside the host identity row, not in a detached action section.
+- Event creation is progressive: details, settings and personality, then optional invites and publish.
+- Ask only for information needed in the current creation step. Preserve whitespace and avoid dashboard-style checklists.
+- MVP location entry is a clear address or venue field. Do not require a paid maps provider before map search is product-critical.

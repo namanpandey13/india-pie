@@ -23,7 +23,9 @@ export const unstable_settings = {
   initialRouteName: 'login',
 };
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch(() => {
+  // Fast Refresh can run after the native splash view has already been released.
+});
 
 export default function RootLayout() {
   const colorScheme = useAppStore((state) => state.colorScheme);
@@ -40,7 +42,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync().catch(() => {
+        // The splash may already be hidden during Fast Refresh or a modal reload.
+      });
     }
   }, [fontsLoaded]);
 
@@ -62,7 +66,16 @@ export default function RootLayout() {
                 options={{ headerShown: false, presentation: 'modal' }}
               />
               <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ headerShown: false, presentation: 'modal' }} />
+              <Stack.Screen
+                name="modal"
+                options={{
+                  contentStyle: {
+                    backgroundColor: colorScheme === 'dark' ? '#0F0F0F' : '#FFFFFF',
+                  },
+                  headerShown: false,
+                  presentation: 'fullScreenModal',
+                }}
+              />
             </Stack>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           </ThemeProvider>

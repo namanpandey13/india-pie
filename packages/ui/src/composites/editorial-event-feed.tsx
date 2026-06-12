@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { BlurView } from 'expo-blur';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Event } from '@hausy/types';
 import { countConfirmed } from '@hausy/utils';
@@ -35,7 +36,7 @@ export function EditorialHomeHeader({
         accessibilityRole="button"
         accessibilityLabel="Open notifications"
         onPress={onNotificationPress}
-        style={styles.notificationButton}>
+        style={[styles.notificationButton, { backgroundColor: colors.surfaceAlt, borderColor: colors.line }]}>
         <Ionicons name="notifications-outline" size={25} color={colors.ink} />
         <View style={[styles.notificationDot, { backgroundColor: colors.brand }]} />
       </Pressable>
@@ -119,6 +120,13 @@ export function FeaturedEventCard({
   return (
     <Pressable onPress={onPress} style={[styles.featuredCard, { backgroundColor: colors.black }]}>
       <Image source={{ uri: event.image }} style={StyleSheet.absoluteFill} contentFit="cover" />
+      <BlurView
+        experimentalBlurMethod="dimezisBlurView"
+        intensity={12}
+        pointerEvents="none"
+        style={StyleSheet.absoluteFill}
+        tint="dark"
+      />
       <View style={[styles.featuredShade, { backgroundColor: colors.overlaySoft }]} />
 
       <View style={styles.featuredTopRow}>
@@ -182,7 +190,7 @@ export function CompactEventCard({
   return (
     <Pressable onPress={onPress} style={[styles.compactCard, { backgroundColor: colors.surface, borderColor: colors.line }]}>
       <View style={styles.compactMain}>
-        <View>
+        <View style={styles.compactImageColumn}>
           <Image source={{ uri: event.image }} style={styles.compactImage} contentFit="cover" />
           <View style={styles.compactEdition}>
             <EventEditionMark previousOccurrences={event.previousOccurrences} />
@@ -341,6 +349,8 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     alignItems: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
     height: 44,
     justifyContent: 'center',
     width: 44,
@@ -479,12 +489,17 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   compactMain: {
+    alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.md,
   },
+  compactImageColumn: {
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+  },
   compactImage: {
     borderRadius: 13,
-    height: 176,
+    height: 168,
     width: 148,
   },
   compactEdition: {
@@ -554,7 +569,6 @@ const styles = StyleSheet.create({
   },
   stackedAvatar: {
     borderRadius: 15,
-    borderWidth: 2,
   },
   trustRow: {
     gap: spacing.sm,

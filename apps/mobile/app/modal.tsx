@@ -4,14 +4,14 @@ import { listNotifications } from '@hausy/api';
 import { useQuery } from '@tanstack/react-query';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, typographyRoles, useThemeColors } from '@hausy/ui';
+import { Card, Loader, typographyRoles, useThemeColors } from '@hausy/ui';
 import { useAuthSession } from '@/lib/auth-session';
 
 export default function NotificationsScreen() {
   const { isLoading, isSignedIn } = useAuthSession();
 
   if (isLoading) {
-    return null;
+    return <Loader fill />;
   }
 
   if (!isSignedIn) {
@@ -29,6 +29,14 @@ function ProtectedNotificationsScreen() {
   });
   const notifications = notificationsQuery.data?.data ?? [];
   const error = notificationsQuery.data?.error ?? null;
+
+  if (notificationsQuery.isLoading) {
+    return (
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
+        <Loader fill />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
@@ -48,7 +56,7 @@ function ProtectedNotificationsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Card style={styles.summaryCard}>
+        <Card style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.line }]}>
           <View style={[styles.summaryIcon, { backgroundColor: colors.surfaceAlt }]}>
             <Ionicons name="notifications-outline" size={24} color={colors.brand} />
           </View>
@@ -65,14 +73,11 @@ function ProtectedNotificationsScreen() {
         <Text style={[styles.sectionLabel, { color: colors.ink }]}>Plan-critical updates</Text>
 
         <View style={styles.list}>
-          {notificationsQuery.isLoading ? (
-            <Text style={[styles.itemBody, { color: colors.muted }]}>Loading notifications.</Text>
-          ) : null}
           {error ? <Text style={[styles.itemBody, { color: colors.muted }]}>{error.message}</Text> : null}
           {notifications.map((item) => (
             <Pressable
               key={item.id}
-              style={[styles.itemRow, { borderColor: colors.line }]}
+              style={[styles.itemRow, { backgroundColor: colors.surface, borderColor: colors.line }]}
               onPress={() => item.eventId ? router.push({ pathname: '/event/[id]', params: { id: item.eventId } }) : undefined}
             >
               <View style={[styles.itemIcon, { backgroundColor: colors.surfaceAlt }]}>
@@ -85,7 +90,7 @@ function ProtectedNotificationsScreen() {
               </View>
             </Pressable>
           ))}
-          {!notificationsQuery.isLoading && !error && notifications.length === 0 ? (
+          {!error && notifications.length === 0 ? (
             <Text style={[styles.itemBody, { color: colors.muted }]}>Approvals, non-approvals, tickets, and announcements will appear here.</Text>
           ) : null}
         </View>
@@ -135,10 +140,11 @@ const styles = StyleSheet.create({
   },
   itemRow: {
     alignItems: 'flex-start',
-    borderBottomWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1,
     flexDirection: 'row',
     gap: 12,
-    paddingBottom: 16,
+    padding: 14,
   },
   itemTitle: {
     ...typographyRoles.bodyStrong,

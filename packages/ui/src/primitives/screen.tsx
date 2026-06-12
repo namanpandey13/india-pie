@@ -7,7 +7,7 @@ export function Screen({ children }: PropsWithChildren) {
   const colors = useThemeColors();
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safe, { backgroundColor: colors.bg }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}

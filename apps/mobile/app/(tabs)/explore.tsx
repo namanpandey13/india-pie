@@ -7,6 +7,7 @@ import {
   EditorialHomeHeader,
   EditorialSearch,
   FeaturedEventCard,
+  Loader,
   Screen,
   typographyRoles,
   useThemeColors,
@@ -84,12 +85,7 @@ export default function ExploreScreen() {
           />
         ))}
 
-        {eventsQuery.isLoading ? (
-          <View style={[styles.emptyState, { borderColor: colors.line, backgroundColor: colors.surfaceAlt }]}>
-            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Finding rooms worth leaving home for.</Text>
-            <Text style={[styles.emptyBody, { color: colors.muted }]}>Checking host-led plans around you.</Text>
-          </View>
-        ) : null}
+        {eventsQuery.isLoading ? <Loader /> : null}
 
         {eventsQuery.data?.error ? (
           <View style={[styles.emptyState, { borderColor: colors.line, backgroundColor: colors.surfaceAlt }]}>

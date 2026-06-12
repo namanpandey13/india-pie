@@ -6,10 +6,11 @@ import {
   listHostEventsAndRequests,
   publishHostEvent,
 } from '@hausy/api';
-import type { EventStatus, HostVisibility } from '@hausy/types';
+import type { EventStatus, HostDraft, HostVisibility } from '@hausy/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { useAppStore } from '@/state/app-store';
+import { supabase } from '@/lib/supabase';
 
 export function useHostDraft() {
   const hostDraft = useAppStore((state) => state.hostDraft);
@@ -26,7 +27,30 @@ export function useHostDraft() {
   });
   const queryClient = useQueryClient();
   const publishMutation = useMutation({
-    mutationFn: () => publishHostEvent(hostDraft),
+    mutationFn: async (overrides?: Partial<HostDraft>) => {
+      const publishDraft = { ...hostDraft, ...overrides };
+      let coverImageUrl = publishDraft.coverImageUrl;
+
+      if (coverImageUrl && !coverImageUrl.startsWith('http')) {
+        if (!supabase) {
+          throw new Error('Supabase is not configured for image uploads.');
+        }
+        const response = await fetch(coverImageUrl);
+        const file = await response.arrayBuffer();
+        const extension = coverImageUrl.split('.').pop()?.split('?')[0]?.toLowerCase() || 'jpg';
+        const path = `${(await supabase.auth.getUser()).data.user?.id}/${Date.now()}.${extension}`;
+        const upload = await supabase.storage.from('event-covers').upload(path, file, {
+          contentType: extension === 'png' ? 'image/png' : 'image/jpeg',
+          upsert: false,
+        });
+        if (upload.error) {
+          throw upload.error;
+        }
+        coverImageUrl = supabase.storage.from('event-covers').getPublicUrl(path).data.publicUrl;
+      }
+
+      return publishHostEvent({ ...publishDraft, coverImageUrl });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['host-dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -66,20 +90,24 @@ export function useHostDraft() {
   return {
     capacity,
     about,
-    error: publishMutation.data?.error ?? hostDashboardQuery.data?.error ?? null,
+    error: publishMutation.error instanceof Error
+      ? { code: 'coverUploadFailed', message: publishMutation.error.message, retryable: true }
+      : publishMutation.data?.error ?? hostDashboardQuery.data?.error ?? null,
     draft,
     events: hostDashboardQuery.data?.data?.events ?? [],
     hostDraft,
     isLoadingDashboard: hostDashboardQuery.isLoading,
     isPublishing: publishMutation.isPending,
+    publishedEventId: publishMutation.data?.data?.id ?? null,
     location,
-    publishHostDraft: () => publishMutation.mutate(),
+    publishHostDraft: (overrides?: Partial<HostDraft>) => publishMutation.mutate(overrides),
     requests: hostDashboardQuery.data?.data?.requests ?? [],
     reviewRequest: (requestId: string, status: 'accepted' | 'declined') => decisionMutation.mutate({ requestId, status }),
     saveHostDraft,
     submitHostDraftForReview,
     setAbout: (next: string) => setHostDraft({ about: next }),
     setCapacity: (next: string) => setHostDraft({ capacity: next }),
+    setCoverImageUrl: (next: string) => setHostDraft({ coverImageUrl: next }),
     setEventStatus: (eventId: string, status: Extract<EventStatus, 'planning' | 'confirmed' | 'cancelled'>) =>
       statusMutation.mutate({ eventId, status }),
     setLocation: (next: string) => setHostDraft({ location: next }),

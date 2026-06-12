@@ -39,7 +39,6 @@ export function Avatar({
           height: size,
           borderRadius: size / 2,
           backgroundColor,
-          borderColor: colors.white,
         },
       ]}>
       {showImage ? (
@@ -69,7 +68,6 @@ export function Avatar({
 const styles = StyleSheet.create({
   avatar: {
     alignItems: 'center',
-    borderWidth: 2,
     justifyContent: 'center',
     overflow: 'hidden',
   },

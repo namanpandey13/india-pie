@@ -1,7 +1,7 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconButton, typographyRoles, useThemeColors } from '@hausy/ui';
+import { IconButton, Loader, typographyRoles, useThemeColors } from '@hausy/ui';
 import { Image } from 'expo-image';
 
 import {
@@ -23,7 +23,7 @@ export default function EventDetailScreen() {
   const { isLoading, isSignedIn } = useAuthSession();
 
   if (isLoading) {
-    return null;
+    return <Loader fill />;
   }
 
   if (!isSignedIn) {
@@ -44,7 +44,7 @@ function ProtectedEventDetailScreen() {
     saved,
     toggleSaved,
   } = useEventDetail(id);
-  const { cancelRsvp, draft, error, requestToJoin, requested, status, updateDraft } = useRsvpRequest(event?.id ?? '');
+  const { cancelRsvp, error, requestToJoin, requested, status } = useRsvpRequest(event?.id ?? '');
 
   if (!event) {
     return (
@@ -88,14 +88,19 @@ function ProtectedEventDetailScreen() {
         <View style={styles.body}>
           <EventIntro event={event} />
           <RsvpActionPanel
-            draft={draft}
             error={error}
-            event={event}
-            requested={requested}
             status={status}
-            onCancel={cancelRsvp}
+            requested={requested}
             onRequest={requestToJoin}
-            onUpdateDraft={updateDraft}
+            onContact={() => router.push({ pathname: '/(tabs)/chat', params: { eventId: event.id } })}
+            onMore={() =>
+              Alert.alert(event.title, undefined, [
+                { text: 'Share with a friend', onPress: () => Share.share({ message: `Take a look at ${event.title} on Hausy.` }) },
+                ...(requested ? [{ text: 'Cancel registration', style: 'destructive' as const, onPress: cancelRsvp }] : []),
+                { text: 'Report event', style: 'destructive', onPress: () => Alert.alert('Report received', 'We will review this event.') },
+                { text: 'Close', style: 'cancel' },
+              ])
+            }
           />
           {host ? (
             <HostTrustPanel

@@ -21,6 +21,7 @@ type AppState = {
   hostDraft: {
     about: string;
     capacity: string;
+    coverImageUrl: string;
     lastSavedAt?: string;
     location: string;
     startsAt: string;
@@ -59,10 +60,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   dismissedConnectionPrompts: [],
   followedHosts: [],
-  colorScheme: 'light',
+  colorScheme: 'dark',
   hostDraft: {
     about: '',
     capacity: '14',
+    coverImageUrl: '',
     location: 'Delhi NCR',
     startsAt: '',
     submittedForReview: false,

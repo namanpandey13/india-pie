@@ -5,6 +5,7 @@ import {
   EventCard,
   GhostButton,
   Header,
+  Loader,
   Screen,
   SectionTitle,
   TopBar,
@@ -31,12 +32,7 @@ export default function SavedScreen() {
 
       <SectionTitle title="Saved plans" action={`${savedEvents.length} plans`} />
       <View style={styles.feed}>
-        {isLoading ? (
-          <Card style={styles.emptyCard}>
-            <Text style={[styles.emptyTitle, { color: colors.ink }]}>Loading saved plans.</Text>
-            <Text style={[styles.emptyBody, { color: colors.muted }]}>Checking your local saves and Supabase records.</Text>
-          </Card>
-        ) : null}
+        {isLoading ? <Loader /> : null}
 
         {error && savedEvents.length === 0 ? (
           <Card style={styles.emptyCard}>

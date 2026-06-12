@@ -5,6 +5,7 @@ import {
   Header,
   IconButton,
   EventEditionMark,
+  Loader,
   Screen,
   typographyRoles,
   useThemeColors,
@@ -114,12 +115,14 @@ export default function VizzScreen() {
         </>
       ) : (
         <View style={styles.empty}>
-          <Text style={[styles.emptyTitle, { color: colors.ink }]}>
-            {eventsQuery.isLoading ? 'Finding your next plan.' : 'No plans to Vizz yet.'}
-          </Text>
-          <Text style={[styles.emptyBody, { color: colors.muted }]}>
-            {eventsQuery.data?.error?.message ?? 'New public events will appear here automatically.'}
-          </Text>
+          {eventsQuery.isLoading ? <Loader /> : (
+            <>
+              <Text style={[styles.emptyTitle, { color: colors.ink }]}>No plans to Vizz yet.</Text>
+              <Text style={[styles.emptyBody, { color: colors.muted }]}>
+                {eventsQuery.data?.error?.message ?? 'New public events will appear here automatically.'}
+              </Text>
+            </>
+          )}
         </View>
       )}
     </Screen>
@@ -244,7 +247,6 @@ function VizzEventProfile({
                 style={[
                   styles.attendeePortrait,
                   {
-                    borderColor: colors.surface,
                     marginLeft: attendeeIndex === 0 ? 0 : -12,
                   },
                 ]}
@@ -344,7 +346,6 @@ const styles = StyleSheet.create({
   },
   attendeePortrait: {
     borderRadius: 999,
-    borderWidth: 2,
     height: 40,
     width: 40,
   },

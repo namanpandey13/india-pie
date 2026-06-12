@@ -23,6 +23,7 @@ export function selectPublicEvents(client: HausyApiClient) {
     .from<EventRow[]>('events')
     .select(EVENT_SELECT)
     .in('status', PUBLIC_EVENT_STATUSES)
+    .order('occurrenceNumber', { ascending: false })
     .order('createdAt', { ascending: false });
 }
 

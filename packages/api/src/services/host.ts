@@ -201,7 +201,7 @@ export async function publishHostEvent(input: HostDraft) {
       capacity,
       category: categoryForTemplate(input.template),
       creatorId: creator.id,
-      imageUrl: defaultEventImage(input.template),
+      imageUrl: input.coverImageUrl?.trim() || defaultEventImage(input.template),
       posterText: title.toUpperCase(),
       priceLabel: 'Free',
       status: 'planning',
